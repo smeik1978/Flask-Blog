@@ -13,4 +13,4 @@ COPY wsgi.py ./
 COPY verwaltungonline verwaltungonline
 EXPOSE 5000
 #ENTRYPOINT [ "sh" ]
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "wsgi:app"]
+CMD ["gunicorn", "--access-logfile", "-", "--workers=2", "--threads=4", "--worker-class=gthread", "--worker-tmp-dir", "/dev/shm", "--bind", "0.0.0.0:5000", "wsgi:app"]
