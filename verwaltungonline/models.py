@@ -35,6 +35,7 @@ class Einheiten(db.Model):
     def __repr__(self) -> str:
         return super().__repr__()
 
+
 class Gemeinschaft(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bezeichnung = db.Column(db.String(25), unique=True, nullable=False)
