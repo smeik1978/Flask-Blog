@@ -1,9 +1,11 @@
+from crypt import methods
 import os
 import re
 import secrets
 from wsgiref.util import request_uri
 from PIL import Image
-from flask import render_template, url_for, flash, redirect, request, abort
+from sqlalchemy import text
+from flask import render_template, url_for, flash, redirect, request, abort, jsonify, make_response, current_app
 from verwaltungonline import app, db, bcrypt
 from verwaltungonline.forms import (
     RegistrationForm,
@@ -36,19 +38,15 @@ from verwaltungonline.models import (
 from flask_login import login_user, current_user, logout_user, login_required
 
 
+# Funktionen für Seiten
 
-#trusted_ips = ['193.30.120.98', '127.0.0.1', '1.2.3.4']
 @app.route("/")
 @app.route("/home")
 def home():
     posts = Post.query.all()
     return render_template("home.html", posts=posts)
-# @app.before_request
-# def limit_remote_addr():
-#     if request.remote_addr not in trusted_ips:
-#         abort(404)  # Not Found
-#     else:
-#         home()
+
+
 
 
 @app.route("/ablesung")
@@ -59,15 +57,13 @@ def ablesung():
         "ablesung.html", title="Ablesung", bezeichnungen=bezeichnungen
     )
 
+@app.route("/about")
+def about():
+    return render_template("about.html", title="About")
 
-@app.route("/einheiten")
-@login_required
+@app.route('/einheiten')
 def einheiten():
-    bezeichnungen = Einheiten.query.all()
-    return render_template(
-        "einheiten.html", title="Einheiten", bezeichnungen=bezeichnungen
-    )
-
+    return render_template("einheiten.html")
 
 @app.route("/einheiten/add_einheit", methods=["GET", "POST"])
 @login_required
@@ -78,7 +74,7 @@ def add_einheit():
         db.session.add(post)
         db.session.commit()
         flash("Datensatz wurde angelegt.", "success")
-        return redirect(url_for("einheiten"))
+        return redirect(url_for("stammdaten"))
     return render_template(
         "add_einheit.html",
         title="Einheit hinzufügen",
@@ -92,7 +88,7 @@ def add_einheit():
 def gemeinschaft():
     bezeichnungen = Gemeinschaft.query.all()
     return render_template(
-        "gemeinschaft.html", title="Gemeinschaftsflächen", bezeichnungen=bezeichnungen
+        "stammdaten.html", title="Gemeinschaftsflächen", bezeichnungen=bezeichnungen
     )
 
 
@@ -105,7 +101,7 @@ def add_gemeinschaft():
         db.session.add(post)
         db.session.commit()
         flash("Datensatz wurde angelegt.", "success")
-        return redirect(url_for("gemeinschaft"))
+        return redirect(url_for("stammdaten"))
     return render_template(
         "add_gemeinschaft.html",
         title="Fläche hinzufügen",
@@ -141,6 +137,35 @@ def add_kostenart():
     )
 
 
+@app.route("/stammdaten", methods=["GET", "POST"])
+@login_required
+def stammdaten():
+    einheiten = Einheiten.query.all()
+    print(type(einheiten))
+    return render_template(
+        "stammdaten.html", einheiten=einheiten)
+
+@app.route("/stammdaten/fill_tab", methods=["POST"])
+#@login_required
+def fill_tab():
+    req = request.get_json()
+    test = req.split("-")
+    for t in db.metadata.tables.values():
+        pass
+    models = {
+    mapper.class_.__name__
+    for mapper in db.Model.registry.mappers
+    }
+    query = text("SELECT * FROM " + test[0])
+    conn = db.engine.connect()
+    result = conn.execute(query)
+    for row in result:
+        pass #print(row[1])
+    
+    res = make_response(jsonify({"message": "Data received"}), 200)
+    return res
+    
+    
 @app.route("/stockwerke")
 @login_required
 def stockwerke():
@@ -233,6 +258,10 @@ def add_vermietung():
         legend="Neue Mieter*in hinzufügen",
     )
 
+@app.route("/verwaltung")
+def verwaltung():
+    return render_template("verwaltung.html", title="Verwaltung")
+
 
 @app.route("/wohnungen")
 @login_required
@@ -268,7 +297,7 @@ def zaehler():
     return render_template("zaehler.html", title="Zähler", bezeichnungen=bezeichnungen)
 
 
-@app.route("/stockwerke/add_zaehler", methods=["GET", "POST"])
+@app.route("/zaehler/add_zaehler", methods=["GET", "POST"])
 @login_required
 def add_zaehler():
     form = AddZaehler()
@@ -312,21 +341,7 @@ def add_zaehlertyp():
         legend="Zählertyp hinzufügen",
     )
 
-
-@app.route("/stammdaten")
-def stammdaten():
-    return render_template("stammdaten.html", title="Stammdaten")
-
-
-@app.route("/verwaltung")
-def verwaltung():
-    return render_template("verwaltung.html", title="Verwaltung")
-
-
-@app.route("/about")
-def about():
-    return render_template("about.html", title="About")
-
+# Allgemeine Funktionen
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
