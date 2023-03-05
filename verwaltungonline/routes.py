@@ -1,10 +1,10 @@
 from crypt import methods
 import os
-import re
 import secrets
 from wsgiref.util import request_uri
 from PIL import Image
 from sqlalchemy import text
+from sqlalchemy.orm import class_mapper
 from flask import render_template, url_for, flash, redirect, request, abort, jsonify, make_response, current_app
 from verwaltungonline import app, db, bcrypt
 from verwaltungonline.forms import (
@@ -57,13 +57,15 @@ def ablesung():
         "ablesung.html", title="Ablesung", bezeichnungen=bezeichnungen
     )
 
+
+
+
 @app.route("/about")
 def about():
     return render_template("about.html", title="About")
 
-@app.route('/einheiten')
-def einheiten():
-    return render_template("einheiten.html")
+
+
 
 @app.route("/einheiten/add_einheit", methods=["GET", "POST"])
 @login_required
@@ -83,13 +85,7 @@ def add_einheit():
     )
 
 
-@app.route("/gemeinschaft")
-@login_required
-def gemeinschaft():
-    bezeichnungen = Gemeinschaft.query.all()
-    return render_template(
-        "stammdaten.html", title="Gemeinschaftsflächen", bezeichnungen=bezeichnungen
-    )
+
 
 
 @app.route("/gemeinschaft/add_gemeinschaft", methods=["GET", "POST"])
@@ -110,13 +106,7 @@ def add_gemeinschaft():
     )
 
 
-@app.route("/kostenarten")
-@login_required
-def kostenarten():
-    bezeichnungen = Kostenarten.query.all()
-    return render_template(
-        "gemeinschaft.html", title="Kostenarten", bezeichnungen=bezeichnungen
-    )
+
 
 
 @app.route("/kostenarten/add_kostenart", methods=["GET", "POST"])
@@ -137,42 +127,35 @@ def add_kostenart():
     )
 
 
-@app.route("/stammdaten", methods=["GET", "POST"])
+
+
+@app.route("/stammdaten")
 @login_required
 def stammdaten():
-    einheiten = Einheiten.query.all()
-    print(type(einheiten))
-    return render_template(
-        "stammdaten.html", einheiten=einheiten)
+    return render_template('stammdaten.html')
 
-@app.route("/stammdaten/fill_tab", methods=["POST"])
-#@login_required
-def fill_tab():
-    req = request.get_json()
-    test = req.split("-")
-    for t in db.metadata.tables.values():
-        pass
-    models = {
-    mapper.class_.__name__
-    for mapper in db.Model.registry.mappers
-    }
-    query = text("SELECT * FROM " + test[0])
-    conn = db.engine.connect()
-    result = conn.execute(query)
-    for row in result:
-        pass #print(row[1])
-    
-    res = make_response(jsonify({"message": "Data received"}), 200)
-    return res
-    
-    
-@app.route("/stockwerke")
-@login_required
-def stockwerke():
-    bezeichnungen = Stockwerke.query.all()
-    return render_template(
-        "stockwerke.html", title="Stockwerke", bezeichnungen=bezeichnungen
-    )
+
+
+
+@app.route('/load_data/<tab_id>')
+def load_data(tab_id):
+    table_name = tab_id.split('-')[0].lower()
+    table = db.metadata.tables[table_name]
+    data_dict = {'data': []}
+    # Spaltennamen aus der Tabelle abrufen
+    column_names = []
+    for index, column in enumerate(table.columns):
+        if index != 0:  # Erste Spalte ignorieren
+            column_names.append(column.name)
+    # Hier können Sie Ihre Schleife zum Abrufen der Daten aus der Tabelle hinzufügen
+    for row in db.session.query(table):
+        row_dict = {}
+        for col_name in column_names:
+            row_dict[col_name] = getattr(row, col_name)
+        data_dict['data'].append(row_dict)
+    #print(data_dict)
+    return jsonify(data_dict)
+  
 
 
 @app.route("/stockwerke/add_stockwerk", methods=["GET", "POST"])
@@ -192,14 +175,6 @@ def add_stockwerk():
         legend="Stockwerk hinzufügen",
     )
 
-
-@app.route("/umlageschluessel")
-@login_required
-def umlageschluessel():
-    bezeichnungen = Umlageschluessel.query.all()
-    return render_template(
-        "umlageschluessel.html", title="Umlageschlüssel", bezeichnungen=bezeichnungen
-    )
 
 
 @app.route("/umlageschluessel/add_umlageschluessel", methods=["GET", "POST"])
@@ -263,13 +238,6 @@ def verwaltung():
     return render_template("verwaltung.html", title="Verwaltung")
 
 
-@app.route("/wohnungen")
-@login_required
-def wohnungen():
-    bezeichnungen = Wohnungen.query.all()
-    return render_template(
-        "wohnungen.html", title="Wohnungen", bezeichnungen=bezeichnungen
-    )
 
 
 @app.route("/wohnungen/add_wohnung", methods=["GET", "POST"])
@@ -290,12 +258,6 @@ def add_wohnung():
     )
 
 
-@app.route("/zaehler")
-@login_required
-def zaehler():
-    bezeichnungen = Zaehler.query.all()
-    return render_template("zaehler.html", title="Zähler", bezeichnungen=bezeichnungen)
-
 
 @app.route("/zaehler/add_zaehler", methods=["GET", "POST"])
 @login_required
@@ -315,13 +277,7 @@ def add_zaehler():
     )
 
 
-@app.route("/zaehlertypen")
-@login_required
-def zaehlertypen():
-    bezeichnungen = Zaehlertypen.query.all()
-    return render_template(
-        "zaehlertypen.html", title="Zählertypen", bezeichnungen=bezeichnungen
-    )
+
 
 
 @app.route("/zaehlertypen/add_zaehlertyp", methods=["GET", "POST"])

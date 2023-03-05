@@ -5,7 +5,6 @@ WORKDIR /usr/src/app
 COPY requirements.txt ./
 RUN apk add python3
 RUN apk add py3-pip
-
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py ./

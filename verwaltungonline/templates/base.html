@@ -10,17 +10,21 @@
             crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static',
             filename='main.css') }}">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         {% if title %}
         <title>13ha Hausverwaltung - {{ title }}</title>
         {% else %}
         <title>13ha Hausverwaltung</title>
         {% endif %}
+        {% block head %}{% endblock head %}
     </head>
     <body>
         <header>
-            <nav class="navbar navbar-expand-md bg-light border sticky-top">
-                <div class="container-fluid mb-2 mb-lg-0">
-                    <a class="navbar-brand " href="#">Hausverwaltung</a>
+            <nav class="navbar navbar-expand-md bg-light border">
+                <div class="container-fluid">
+                    <a class="navbar-brand mb-0 h1" href="{{ url_for('home') }}">
+                        <img src="/static/pics/13ha_logo_150x43.jpg" alt="Logo"  class="d-inline-block align-text-center">
+                        Hausverwaltung</a>
                     <button class="navbar-toggler" type="button"
                         data-bs-toggle="collapse"
                         data-bs-target="#navbarSupportedContent"
@@ -60,9 +64,23 @@
                 </div>
             </nav>
         </header>
-        <main role="main" class="container">
+        <main role="main" class="container-fluid">
             <div class="row">
-                <div class="col-md-8">
+                <div class="col-md-auto gy-3">
+                    {% block MenueLeft %}
+                    <div class="content-section">
+                        <h4>Aktionen</h4>
+                        <p class='text-muted '>Bitte wählen
+                          <div class="btn-group-vertical" role="group" aria-label="Basic outlined example">
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#ModalCreate">Hinzufügen</button>
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#ModalEdit">Bearbeiten</button>
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#ModalDelete">Löschen</button>
+                          </div>
+                        </p>
+                    </div>
+                    {% endblock MenueLeft %}
+                </div>
+                <div class="col-md-auto gy-3">
                     {% with messages =
                     get_flashed_messages(with_categories=true) %}
                     {% if messages %}
@@ -75,27 +93,19 @@
                     {% endwith %}
                     {% block content %}{% endblock %}
                 </div>
-                <div class="col-md-20">
-                    {% block Menue %}
+                <div class="col-md-2 gy-3">
+                    {% block MenueRight %}
                     <div class="content-section">
-                        <h3>Menü</h3>
+                        <h4>Aktionen</h4>
                         <p class='text-muted '>Bitte wählen
-                            <ul class="list-group">
-                                <li class="list-group-item
-                                    list-group-item-light"><a href="{{
-                                        url_for('vermietung') }}">Vermietung</a></li>
-                                <li class="list-group-item
-                                    list-group-item-light"><a href="{{
-                                        url_for('add_vermietung') }}">Vermietung
-                                        hinzufügen</a></li>
-                                <li class="list-group-item
-                                    list-group-item-light">Calendars</li>
-                                <li class="list-group-item
-                                    list-group-item-light">etc</li>
-                            </ul>
+                          <div class="btn-group-vertical" role="group" aria-label="Basic outlined example">
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#ModalCreate">Hinzufügen</button>
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#ModalEdit">Bearbeiten</button>
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#ModalDelete">Löschen</button>
+                          </div>
                         </p>
                     </div>
-                    {% endblock Menue %}
+                    {% endblock MenueRight %}   
                 </div>
             </div>
         </main>

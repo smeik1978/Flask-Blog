@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
 {% block content %}
 <a class="btn btn-primary" href="#" role="button">Link</a>
 <button class="btn btn-primary" type="submit">Button</button>
@@ -6,16 +6,9 @@
 <input class="btn btn-primary" type="submit" value="Submit">
 <input class="btn btn-primary" type="reset" value="Reset">
 {% endblock content %}
-{% block Menue %}
-<h3>Verwaltung</h3>
-<p class='text-muted '>Bitte wählen
-<ul class="list-group">
-    <li class="list-group-item list-group-item-light"><a href="{{
-                url_for('vermietung') }}">Was anderes</a></li>
-    <li class="list-group-item list-group-item-light"><a href="{{
-                url_for('add_vermietung') }}">Vermietung hinzufügen</a></li>
-    <li class="list-group-item list-group-item-light">Calendars</li>
-    <li class="list-group-item list-group-item-light">etc</li>
-</ul>
-</p>
-{% endblock Menue %}
+{% block MenueLeft %}
+
+{% endblock MenueLeft %}
+{% block MenueRight %}
+
+{% endblock MenueRight %}
