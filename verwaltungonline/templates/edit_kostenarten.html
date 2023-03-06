@@ -1,4 +1,4 @@
-{% extends "gemeinschaft.html" %}
+{% extends "kostenarten.html" %}
 {% block stammdaten %}
 <div class="content-section mt-3 col-md-6">
     <div class="row">
@@ -8,7 +8,11 @@
                 {{ form.hidden_tag() }}
                 <fieldset class="form-group">
                     <div class="form-group">
-                        {{ form.bezeichnung.label(class="form-control-label") }}
+                        {{ form.kostenarten.label(class="form-label") }}
+                        {{ form.kostenarten(class="form-select") }}
+                    </div>
+                    <div class="form-group mt-3">
+                        {{ form.bezeichnung.label(class="form-label") }}
                         {% if form.bezeichnung.errors %}
                         {{ form.bezeichnung(class="form-control form-control-lg
                         is-invalid") }}
@@ -24,7 +28,7 @@
                 </fieldset>
                 <div class="form-group mt-3">
                     {{ form.submit(class="btn btn-outline-primary") }}
-                    <a href="{{ url_for('gemeinschaft') }}" class="btn
+                    <a href="{{ url_for('kostenarten') }}" class="btn
                         btn-outline-primary" role="button">Abbrechen</a>
                 </div>
             </form>

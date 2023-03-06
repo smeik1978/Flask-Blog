@@ -8,9 +8,14 @@
                 {{ form.hidden_tag() }}
                 <fieldset class="form-group">
                     <div class="form-group">
-                        {{ form.bezeichnung.label(class="form-control-label") }}
+                        {{ form.bezeichnung.label(class="form-label") }}
+                        {{ form.select_bezeichnung(class="form-select") }}
+                    </div>
+                    <div class="form-group mt-3">
+                        {{ form.bezeichnung.label(class="form-label") }}
                         {% if form.bezeichnung.errors %}
-                        {{ form.bezeichnung(class="form-control form-control is-invalid") }}
+                        {{ form.bezeichnung(class="form-control form-control-lg
+                        is-invalid") }}
                         <div class="invalid-feedback">
                             {% for error in form.bezeichnung.errors %}
                             <span>{{ error }}</span>
@@ -22,22 +27,27 @@
                     </div>
                     <div class="form-group">
                         {{ form.tabelle1.label(class="form-control-label") }}
+                        {{ form.select_tabelle1(class="form-select") }}
                         {{ form.tabelle1(class="form-control") }}
                     </div>
                     <div class="form-group">
                         {{ form.wert1.label(class="form-control-label") }}
+                        {{ form.select_wert1(class="form-select") }}
                         {{ form.wert1(class="form-control") }}
                     </div>
                     <div class="form-group">
                         {{ form.tabelle2.label(class="form-control-label") }}
+                        {{ form.select_tabelle2(class="form-select") }}
                         {{ form.tabelle2(class="form-control") }}
                     </div>
                     <div class="form-group">
                         {{ form.wert2.label(class="form-control-label") }}
+                        {{ form.select_wert2(class="form-select") }}
                         {{ form.wert2(class="form-control") }}
                     </div>
                     <div class="form-group">
                         {{ form.operation.label(class="form-control-label") }}
+                        {{ form.select_operation(class="form-select") }}
                         {{ form.operation(class="form-control") }}
                     </div>
                 </fieldset>

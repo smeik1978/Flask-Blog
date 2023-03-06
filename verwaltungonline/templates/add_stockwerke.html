@@ -1,4 +1,4 @@
-{% extends "gemeinschaft.html" %}
+{% extends "stockwerke.html" %}
 {% block stammdaten %}
 <div class="content-section mt-3 col-md-6">
     <div class="row">
@@ -24,7 +24,7 @@
                 </fieldset>
                 <div class="form-group mt-3">
                     {{ form.submit(class="btn btn-outline-primary") }}
-                    <a href="{{ url_for('gemeinschaft') }}" class="btn
+                    <a href="{{ url_for('stockwerke') }}" class="btn
                         btn-outline-primary" role="button">Abbrechen</a>
                 </div>
             </form>

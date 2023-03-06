@@ -9,6 +9,7 @@ from wtforms import (
     TextAreaField,
     IntegerField,
     DateField,
+    SelectField
 )
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from verwaltungonline.models import (
@@ -101,6 +102,25 @@ class AddEinheit(FlaskForm):
             raise ValidationError("Diese Einheit gibt es schon!")
 
 
+class EditEinheit(FlaskForm):
+    einheit = SelectField('Einheit', choices=[], validators=[DataRequired()])
+    bezeichnung = StringField('Bezeichnung', validators=[DataRequired(), Length(max=25)])
+    submit = SubmitField('Speichern')
+
+    def __init__(self, *args, **kwargs):
+        super(EditEinheit, self).__init__(*args, **kwargs)
+        self.einheit.choices = [(e.id, e.bezeichnung) for e in Einheiten.query.all()]
+
+        
+class DeleteEinheit(FlaskForm):
+    einheit = SelectField('Einheit', choices=[], validators=[DataRequired()])
+    submit = SubmitField('Löschen')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.einheit.choices = [(str(e.id), e.bezeichnung) for e in Einheiten.query.all()]
+        
+
 class AddGemeinschaft(FlaskForm):
     bezeichnung = StringField(
         "Bezeichnung", validators=[DataRequired(), Length(max=25)]
@@ -115,6 +135,25 @@ class AddGemeinschaft(FlaskForm):
             raise ValidationError("Diese Fläche gibt es schon!")
 
 
+class EditGemeinschaft(FlaskForm):
+    gemeinschaft = SelectField('Gemeinschaft', choices=[], validators=[DataRequired()])
+    bezeichnung = StringField('Bezeichnung', validators=[DataRequired(), Length(max=25)])
+    submit = SubmitField('Speichern')
+
+    def __init__(self, *args, **kwargs):
+        super(EditGemeinschaft, self).__init__(*args, **kwargs)
+        self.gemeinschaft.choices = [(e.id, e.bezeichnung) for e in Gemeinschaft.query.all()]
+
+        
+class DeleteGemeinschaft(FlaskForm):
+    gemeinschaft = SelectField('Gemeinschaft', choices=[], validators=[DataRequired()])
+    submit = SubmitField('Löschen')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gemeinschaft.choices = [(str(e.id), e.bezeichnung) for e in Gemeinschaft.query.all()]
+
+
 class AddKostenart(FlaskForm):
     bezeichnung = StringField(
         "Bezeichnung", validators=[DataRequired(), Length(max=25)]
@@ -125,6 +164,25 @@ class AddKostenart(FlaskForm):
         kostenart = Kostenarten.query.filter_by(bezeichnung=bezeichnung.data).first()
         if kostenart:
             raise ValidationError("Diese Kostenart gibt es schon!")
+
+
+class EditKostenarten(FlaskForm):
+    kostenarten = SelectField('Kostenarten', choices=[], validators=[DataRequired()])
+    bezeichnung = StringField('Bezeichnung', validators=[DataRequired(), Length(max=25)])
+    submit = SubmitField('Speichern')
+
+    def __init__(self, *args, **kwargs):
+        super(EditKostenarten, self).__init__(*args, **kwargs)
+        self.kostenarten.choices = [(e.id, e.bezeichnung) for e in Kostenarten.query.all()]
+
+        
+class DeleteKostenarten(FlaskForm):
+    kostenarten = SelectField('Kostenarten', choices=[], validators=[DataRequired()])
+    submit = SubmitField('Löschen')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.kostenarten.choices = [(str(e.id), e.bezeichnung) for e in Kostenarten.query.all()]
 
 
 class AddStockwerk(FlaskForm):
@@ -139,19 +197,74 @@ class AddStockwerk(FlaskForm):
             raise ValidationError("Dieses Stockwerk gibt es schon!")
 
 
+class EditStockwerke(FlaskForm):
+    stockwerke = SelectField('Stockwerke', choices=[], validators=[DataRequired()])
+    bezeichnung = StringField('Bezeichnung', validators=[DataRequired(), Length(max=25)])
+    submit = SubmitField('Speichern')
+
+    def __init__(self, *args, **kwargs):
+        super(EditStockwerke, self).__init__(*args, **kwargs)
+        self.stockwerke.choices = [(e.id, e.bezeichnung) for e in Stockwerke.query.all()]
+
+        
+class DeleteStockwerke(FlaskForm):
+    stockwerke = SelectField('Stockwerke', choices=[], validators=[DataRequired()])
+    submit = SubmitField('Löschen')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stockwerke.choices = [(str(e.id), e.bezeichnung) for e in Stockwerke.query.all()]
+
+
 class AddUmlageschluessel(FlaskForm):
-    bezeichnung = StringField(
-        "Bezeichnung", validators=[DataRequired(), Length(max=25)]
-    )
+    bezeichnung = StringField("Bezeichnung", validators=[DataRequired(), Length(max=25)])
+    tabelle1 = StringField("Tabelle1", validators=[DataRequired(), Length(max=25)])
+    wert1 = StringField("Wert1", validators=[DataRequired(), Length(max=25)])
+    tabelle2 = StringField("Tabelle2", validators=[DataRequired(), Length(max=25)])
+    wert2 = StringField("Wert2", validators=[DataRequired(), Length(max=25)])
+    operation = StringField("Operation", validators=[DataRequired(), Length(max=1)])
     submit = SubmitField("Speichern")
 
     def validate_bezeichnung(self, bezeichnung):
-        schluessel = Umlageschluessel.query.filter_by(
+        bezeichnung = Umlageschluessel.query.filter_by(
             bezeichnung=bezeichnung.data
         ).first()
-        if schluessel:
+        if bezeichnung:
             raise ValidationError("Diesen Schlüssel gibt es schon!")
 
+
+class EditUmlageschluessel(FlaskForm):
+    select_bezeichnung = SelectField('Bezeichnung', choices=[], validators=[DataRequired()])
+    bezeichnung = StringField('Bezeichnung', validators=[DataRequired(), Length(max=25)])
+    select_tabelle1 = SelectField('Tabelle1', choices=[], validators=[DataRequired()])
+    tabelle1 = StringField('Tabelle1', validators=[DataRequired(), Length(max=25)])
+    select_wert1 = SelectField('Wert1', choices=[], validators=[DataRequired()])
+    wert1 = StringField('Wert1', validators=[DataRequired(), Length(max=25)])
+    select_tabelle2 = SelectField('Tabelle2', choices=[], validators=[DataRequired()])
+    tabelle2 = StringField('Tabelle2', validators=[DataRequired(), Length(max=25)])
+    select_wert2 = SelectField('Wert2', choices=[], validators=[DataRequired()])
+    wert2 = StringField('Wert2', validators=[DataRequired(), Length(max=25)])
+    select_operation = SelectField('Operation', choices=[], validators=[DataRequired()])
+    operation = StringField('Operation', validators=[DataRequired(), Length(max=25)])
+    submit = SubmitField('Speichern')
+
+    def __init__(self, *args, **kwargs):
+        super(EditUmlageschluessel, self).__init__(*args, **kwargs)
+        self.select_bezeichnung.choices = [(e.id, e.bezeichnung) for e in Umlageschluessel.query.all()]
+        self.select_tabelle1.choices = [(e.id, e.tabelle1) for e in Umlageschluessel.query.all()]
+        self.select_wert1.choices = [(e.id, e.wert1) for e in Umlageschluessel.query.all()]
+        self.select_tabelle2.choices = [(e.id, e.tabelle2) for e in Umlageschluessel.query.all()]
+        self.select_wert2.choices = [(e.id, e.wert2) for e in Umlageschluessel.query.all()]
+        self.select_operation.choices = [(e.id, e.operation) for e in Umlageschluessel.query.all()]
+
+        
+class DeleteUmlageschluessel(FlaskForm):
+    umlageschluessel = SelectField('Umlageschluessel', choices=[], validators=[DataRequired()])
+    submit = SubmitField('Löschen')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.umlageschluessel.choices = [(str(e.id), e.bezeichnung) for e in Umlageschluessel.query.all()]
 
 class AddWohnung(FlaskForm):
     bezeichnung = StringField(
@@ -163,6 +276,25 @@ class AddWohnung(FlaskForm):
         wohnung = Wohnungen.query.filter_by(bezeichnung=bezeichnung.data).first()
         if wohnung:
             raise ValidationError("Diese Wohnung gibt es schon!")
+
+
+class EditWohnungen(FlaskForm):
+    wohnungen = SelectField('Wohnungen', choices=[], validators=[DataRequired()])
+    bezeichnung = StringField('Bezeichnung', validators=[DataRequired(), Length(max=25)])
+    submit = SubmitField('Speichern')
+
+    def __init__(self, *args, **kwargs):
+        super(EditWohnungen, self).__init__(*args, **kwargs)
+        self.wohnungen.choices = [(e.id, e.bezeichnung) for e in Wohnungen.query.all()]
+
+        
+class DeleteWohnungen(FlaskForm):
+    wohnungen = SelectField('Wohnungen', choices=[], validators=[DataRequired()])
+    submit = SubmitField('Löschen')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.wohnungen.choices = [(str(e.id), e.bezeichnung) for e in Wohnungen.query.all()]
 
 
 class AddZaehler(FlaskForm):
@@ -177,6 +309,25 @@ class AddZaehler(FlaskForm):
             raise ValidationError("Diesen Zähler gibt es schon!")
 
 
+class EditZaehler(FlaskForm):
+    zaehler = SelectField('Zaehler', choices=[], validators=[DataRequired()])
+    bezeichnung = StringField('Bezeichnung', validators=[DataRequired(), Length(max=25)])
+    submit = SubmitField('Speichern')
+
+    def __init__(self, *args, **kwargs):
+        super(EditZaehler, self).__init__(*args, **kwargs)
+        self.zaehler.choices = [(e.id, e.bezeichnung) for e in Zaehler.query.all()]
+
+        
+class DeleteZaehler(FlaskForm):
+    zaehler = SelectField('Zaehler', choices=[], validators=[DataRequired()])
+    submit = SubmitField('Löschen')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.zaehler.choices = [(str(e.id), e.bezeichnung) for e in Zaehler.query.all()]
+
+
 class AddZaehlertyp(FlaskForm):
     bezeichnung = StringField(
         "Bezeichnung", validators=[DataRequired(), Length(max=25)]
@@ -188,6 +339,25 @@ class AddZaehlertyp(FlaskForm):
         if typ:
             raise ValidationError("Diesen Zählertyp gibt es schon!")
 
+
+class EditZaehlertypen(FlaskForm):
+    zaehlertypen = SelectField('Zaehlertypen', choices=[], validators=[DataRequired()])
+    bezeichnung = StringField('Bezeichnung', validators=[DataRequired(), Length(max=25)])
+    submit = SubmitField('Speichern')
+
+    def __init__(self, *args, **kwargs):
+        super(EditZaehlertypen, self).__init__(*args, **kwargs)
+        self.zaehlertypen.choices = [(e.id, e.bezeichnung) for e in Zaehlertypen.query.all()]
+
+        
+class DeleteZaehlertypen(FlaskForm):
+    zaehlertypen = SelectField('Zaehlertypen', choices=[], validators=[DataRequired()])
+    submit = SubmitField('Löschen')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.zaehlertypen.choices = [(str(e.id), e.bezeichnung) for e in Zaehlertypen.query.all()]
+        
 
 class AddVermietung(FlaskForm):
     weid = StringField("WEID", validators=[DataRequired(), Length(max=5)])

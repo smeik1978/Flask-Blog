@@ -1,0 +1,87 @@
+{% extends "home.html" %}
+{% block content %}
+<nav class="nav nav-pills bg-light nav-fill" id="myTab" role="tablist">
+  <button class="nav-link active" id="Einheiten-tab" data-bs-toggle="tab"
+    data-bs-target="#Einheiten-tab-pane" type="button" role="tab"
+    aria-controls="Einheiten-tab-pane" aria-selected="true">Einheiten</button>
+  <button class="nav-link" id="Gemeinschaft-tab" data-bs-toggle="tab"
+    data-bs-target="#Gemeinschaft-tab-pane" type="button" role="tab"
+    aria-controls="Gemeinschaft-tab-pane" aria-selected="false">Gemeinschaftsflächen</button>
+  <button class="nav-link" id="Kostenarten-tab" data-bs-toggle="tab"
+    data-bs-target="#Kostenarten-tab-pane" type="button" role="tab"
+    aria-controls="Kostenarten-tab-pane" aria-selected="false">Kostenarten</button>
+  <button class="nav-link" id="Stockwerke-tab" data-bs-toggle="tab"
+    data-bs-target="#Stockwerke-tab-pane" type="button" role="tab"
+    aria-controls="Stockwerke-tab-pane" aria-selected="false">Stockwerke</button>
+  <button class="nav-link" id="Umlageschluessel-tab" data-bs-toggle="tab"
+    data-bs-target="#Umlageschluessel-tab-pane" type="button" role="tab"
+    aria-controls="Umlageschluessel-tab-pane" aria-selected="false">Umlageschlüssel</button>
+  <button class="nav-link" id="Wohnungen-tab" data-bs-toggle="tab"
+    data-bs-target="#Wohnungen-tab-pane" type="button" role="tab"
+    aria-controls="Wohnungen-tab-pane" aria-selected="false">Wohnungen</button>
+  <button class="nav-link" id="Zaehler-tab" data-bs-toggle="tab"
+    data-bs-target="#Zaehler-tab-pane" type="button" role="tab"
+    aria-controls="Zaehler-tab-pane" aria-selected="false">Zähler</button>
+  <button class="nav-link" id="Zaehlertypen-tab" data-bs-toggle="tab"
+    data-bs-target="#Zaehlertypen-tab-pane" type="button" role="tab"
+    aria-controls="Zaehlertypen-tab-pane" aria-selected="false">Zählertypen</button>
+</nav>
+
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="Einheiten-tab-pane" role="tabpanel"
+    aria-labelledby="Einheiten-tab" tabindex="0">
+
+  </div>
+  <div class="tab-pane fade" id="Gemeinschaft-tab-pane" role="tabpanel"
+    aria-labelledby="Gemeinschaft-tab" tabindex="0">
+
+  </div>
+  <div class="tab-pane fade" id="Kostenarten-tab-pane" role="tabpanel"
+    aria-labelledby="Kostenarten-tab" tabindex="0">
+
+  </div>
+  <div class="tab-pane fade" id="Stockwerke-tab-pane" role="tabpanel"
+    aria-labelledby="Stockwerke-tab" tabindex="0">
+
+  </div>
+  <div class="tab-pane fade" id="Umlageschluessel-tab-pane" role="tabpanel"
+    aria-labelledby="Umlageschluessel-tab" tabindex="0">
+
+  </div>
+  <div class="tab-pane fade" id="Wohnungen-tab-pane" role="tabpanel"
+    aria-labelledby="Wohnungen-tab" tabindex="0">
+
+  </div>
+  <div class="tab-pane fade" id="Zaehler-tab-pane" role="tabpanel"
+    aria-labelledby="Zaehler-tab" tabindex="0">
+
+  </div>
+  <div class="tab-pane fade" id="Zaehlertypen-tab-pane" role="tabpanel"
+    aria-labelledby="Zaehlertypen-tab" tabindex="0">
+
+  </div>
+</div>
+
+
+{% endblock content %}
+
+{% block MenueLeft %}
+<div class="content-section">
+  <h4>Aktionen</h4>
+  <p class='text-muted '>Bitte wählen
+    <div class="btn-group-vertical" role="group" aria-label="Basic outlined example">
+      <button type="button" class="btn btn-outline-primary" id="add-btn">Hinzufügen</button>
+      <button type="button" class="btn btn-outline-primary" id="edit-btn">Bearbeiten</button>
+      <button type="button" class="btn btn-outline-primary" id="delete-btn">Löschen</button>
+    </div>
+  </p>
+</div>
+{% endblock MenueLeft %}
+
+{% block MenueRight %}
+
+{% endblock MenueRight %}
+{% block script %}
+<script src="{{ url_for('static', filename='stammdaten.js') }}"></script>
+
+{% endblock script %}

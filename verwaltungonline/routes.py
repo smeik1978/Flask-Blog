@@ -1,26 +1,19 @@
 from crypt import methods
+from curses import keyname
 import os
+from pyexpat.errors import messages
 import secrets
 from wsgiref.util import request_uri
 from PIL import Image
 from sqlalchemy import text
 from sqlalchemy.orm import class_mapper
-from flask import render_template, url_for, flash, redirect, request, abort, jsonify, make_response, current_app
+from flask import get_flashed_messages, render_template, url_for, flash, redirect, request, abort, current_app
 from verwaltungonline import app, db, bcrypt
 from verwaltungonline.forms import (
-    RegistrationForm,
-    LoginForm,
-    UpdateAccountForm,
-    PostForm,
-    AddEinheit,
-    AddGemeinschaft,
-    AddKostenart,
-    AddStockwerk,
-    AddUmlageschluessel,
-    AddVermietung,
-    AddWohnung,
-    AddZaehler,
-    AddZaehlertyp,
+    RegistrationForm, LoginForm, UpdateAccountForm, PostForm,
+    AddEinheit, AddGemeinschaft, AddKostenart, AddStockwerk, AddUmlageschluessel, AddVermietung, AddWohnung, AddZaehler, AddZaehlertyp,
+    EditEinheit, DeleteEinheit, EditGemeinschaft, DeleteGemeinschaft, EditKostenarten, DeleteKostenarten, EditStockwerke, DeleteStockwerke,
+    EditUmlageschluessel, DeleteUmlageschluessel, EditWohnungen, DeleteWohnungen, EditZaehler, DeleteZaehler, EditZaehlertypen, DeleteZaehlertypen
 )
 from verwaltungonline.models import (
     User,
@@ -57,19 +50,21 @@ def ablesung():
         "ablesung.html", title="Ablesung", bezeichnungen=bezeichnungen
     )
 
-
-
-
 @app.route("/about")
 def about():
     return render_template("about.html", title="About")
 
 
-
-
-@app.route("/einheiten/add_einheit", methods=["GET", "POST"])
+@app.route('/einheiten')
 @login_required
-def add_einheit():
+def einheiten():
+    einheiten = Einheiten.query.all()
+    return render_template("einheiten.html", title="Einheiten", einheiten=einheiten)
+
+
+@app.route("/add_einheiten", methods=["GET", "POST"])
+@login_required
+def add_einheiten():
     form = AddEinheit()
     if form.validate_on_submit():
         post = Einheiten(bezeichnung=form.bezeichnung.data)
@@ -78,17 +73,63 @@ def add_einheit():
         flash("Datensatz wurde angelegt.", "success")
         return redirect(url_for("stammdaten"))
     return render_template(
-        "add_einheit.html",
+        "add_einheiten.html",
         title="Einheit hinzufügen",
         form=form,
         legend="Einheit hinzufügen",
+        action=url_for('add_einheiten')
+    )
+
+@app.route('/edit_einheiten', methods=['GET', 'POST'])
+def edit_einheiten():
+    form = EditEinheit()
+    einheit = Einheiten.query.get(form.einheit.data)
+    if form.validate_on_submit():
+        bezeichnung = form.bezeichnung.data
+        if Einheiten.query.filter_by(bezeichnung=bezeichnung).first():
+            flash("Diese Einheit gibt es schon!")
+            return redirect(url_for('einheiten'))
+        einheit.bezeichnung = bezeichnung
+        db.session.commit()
+        flash("Einheit erfolgreich aktualisiert!")
+        return redirect(url_for('einheiten'))
+    else:
+        print(form.errors)
+    return render_template(
+        'edit_einheiten.html',
+        form=form,
+        legend="Einheit bearbeiten",
+        action=url_for('edit_einheiten')
+        )
+
+
+@app.route("/delete_einheiten", methods=["GET", "POST"])
+@login_required
+def delete_einheiten():
+    form = DeleteEinheit()
+    if form.validate_on_submit():
+        einheit = Einheiten.query.get(form.einheit.data)
+        db.session.delete(einheit)
+        db.session.commit()
+        flash("Die Einheit wurde erfolgreich gelöscht.", "success")
+        return redirect(url_for('einheiten'))
+
+    return render_template(
+        "delete_einheiten.html",
+        form=form,
+        legend="Einheit löschen",
+        action=url_for('delete_einheiten')
     )
 
 
+@app.route("/Gemeinschaft")
+@login_required
+def gemeinschaft():
+    gemeinschaft = Gemeinschaft.query.all()
+    return render_template("gemeinschaft.html", title="Gemeinschaftslächen", gemeinschaft=gemeinschaft)
 
 
-
-@app.route("/gemeinschaft/add_gemeinschaft", methods=["GET", "POST"])
+@app.route("/add_gemeinschaft", methods=["GET", "POST"])
 @login_required
 def add_gemeinschaft():
     form = AddGemeinschaft()
@@ -97,7 +138,7 @@ def add_gemeinschaft():
         db.session.add(post)
         db.session.commit()
         flash("Datensatz wurde angelegt.", "success")
-        return redirect(url_for("stammdaten"))
+        return redirect(url_for("gemeinschaft"))
     return render_template(
         "add_gemeinschaft.html",
         title="Fläche hinzufügen",
@@ -106,27 +147,113 @@ def add_gemeinschaft():
     )
 
 
+@app.route('/edit_gemeinschaft', methods=['GET', 'POST'])
+def edit_gemeinschaft():
+    form = EditGemeinschaft()
+    gemeinschaft = Gemeinschaft.query.get(form.gemeinschaft.data)
+    if form.validate_on_submit():
+        bezeichnung = form.bezeichnung.data
+        if Gemeinschaft.query.filter_by(bezeichnung=bezeichnung).first():
+            flash("Diese Gemeinschaftsfläche gibt es schon!")
+            return redirect(url_for('gemeinschaft'))
+        gemeinschaft.bezeichnung = bezeichnung
+        db.session.commit()
+        flash("Datensatz erfolgreich aktualisiert!")
+        return redirect(url_for('gemeinschaft'))
+    else:
+        print(form.errors)
+    return render_template(
+        'edit_gemeinschaft.html',
+        form=form,
+        legend="Datensatz bearbeiten",
+        action=url_for('edit_gemeinschaft')
+        )
 
 
-
-@app.route("/kostenarten/add_kostenart", methods=["GET", "POST"])
+@app.route("/delete_gemeinschaft", methods=["GET", "POST"])
 @login_required
-def add_kostenart():
+def delete_gemeinschaft():
+    form = DeleteGemeinschaft()
+    if form.validate_on_submit():
+        gemeinschaft = Gemeinschaft.query.get(form.gemeinschaft.data)
+        db.session.delete(gemeinschaft)
+        db.session.commit()
+        flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
+        return redirect(url_for('gemeinschaft'))
+
+    return render_template(
+        "delete_gemeinschaft.html",
+        form=form,
+        legend="Datensatz löschen",
+        action=url_for('delete_gemeinschaft')
+    )
+
+
+@app.route("/kostenarten")
+@login_required
+def kostenarten():
+    kostenarten = Kostenarten.query.all()
+    return render_template("kostenarten.html", title="Kostenarten", kostenarten=kostenarten)
+
+
+@app.route("/add_kostenarten", methods=["GET", "POST"])
+@login_required
+def add_kostenarten():
     form = AddKostenart()
     if form.validate_on_submit():
         post = Kostenarten(bezeichnung=form.bezeichnung.data)
         db.session.add(post)
         db.session.commit()
         flash("Datensatz wurde angelegt.", "success")
-        return redirect(url_for("kostenarten"))
+        return redirect(url_for("stammdaten"))
     return render_template(
-        "add_kostenart.html",
+        "add_kostenarten.html",
         title="Kostenart hinzufügen",
         form=form,
         legend="Kostenart hinzufügen",
     )
 
 
+@app.route('/edit_kostenarten', methods=['GET', 'POST'])
+def edit_kostenarten():
+    form = EditKostenarten()
+    kostenarten = Kostenarten.query.get(form.kostenarten.data)
+    if form.validate_on_submit():
+        bezeichnung = form.bezeichnung.data
+        if Kostenarten.query.filter_by(bezeichnung=bezeichnung).first():
+            flash("Diese Kostenart gibt es schon!")
+            return redirect(url_for('kostenarten'))
+        kostenarten.bezeichnung = bezeichnung
+        db.session.commit()
+        flash("Kostenart erfolgreich aktualisiert!")
+        return redirect(url_for('kostenarten'))
+    else:
+        print(form.errors)
+    return render_template(
+        'edit_kostenarten.html',
+        form=form,
+        legend="Kostenarten bearbeiten",
+        action=url_for('edit_kostenarten')
+        )
+
+
+@app.route("/delete_kostenarten", methods=["GET", "POST"])
+@login_required
+def delete_kostenarten():
+    form = DeleteKostenarten()
+    if form.validate_on_submit():
+        kostenarten = Kostenarten.query.get(form.kostenarten.data)
+        db.session.delete(kostenarten)
+        db.session.commit()
+        flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
+        return redirect(url_for('kostenarten'))
+
+    return render_template(
+        "delete_kostenarten.html",
+        form=form,
+        legend="Datensatz löschen",
+        action=url_for('delete_kostenarten')
+    )
 
 
 @app.route("/stammdaten")
@@ -135,32 +262,16 @@ def stammdaten():
     return render_template('stammdaten.html')
 
 
-
-
-@app.route('/load_data/<tab_id>')
-def load_data(tab_id):
-    table_name = tab_id.split('-')[0].lower()
-    table = db.metadata.tables[table_name]
-    data_dict = {'data': []}
-    # Spaltennamen aus der Tabelle abrufen
-    column_names = []
-    for index, column in enumerate(table.columns):
-        if index != 0:  # Erste Spalte ignorieren
-            column_names.append(column.name)
-    # Hier können Sie Ihre Schleife zum Abrufen der Daten aus der Tabelle hinzufügen
-    for row in db.session.query(table):
-        row_dict = {}
-        for col_name in column_names:
-            row_dict[col_name] = getattr(row, col_name)
-        data_dict['data'].append(row_dict)
-    #print(data_dict)
-    return jsonify(data_dict)
-  
-
-
-@app.route("/stockwerke/add_stockwerk", methods=["GET", "POST"])
+@app.route("/stockwerke")
 @login_required
-def add_stockwerk():
+def stockwerke():
+    stockwerke = Stockwerke.query.all()
+    return render_template("stockwerke.html", title="Stockwerke", stockwerke=stockwerke)
+
+
+@app.route("/add_stockwerke", methods=["GET", "POST"])
+@login_required
+def add_stockwerke():
     form = AddStockwerk()
     if form.validate_on_submit():
         post = Stockwerke(bezeichnung=form.bezeichnung.data)
@@ -169,21 +280,75 @@ def add_stockwerk():
         flash("Datensatz wurde angelegt.", "success")
         return redirect(url_for("stockwerke"))
     return render_template(
-        "add_stockwerk.html",
+        "add_stockwerke.html",
         title="Stockwerk hinzufügen",
         form=form,
         legend="Stockwerk hinzufügen",
     )
 
 
+@app.route('/edit_stockwerke', methods=['GET', 'POST'])
+def edit_stockwerke():
+    form = EditStockwerke()
+    stockwerke = Stockwerke.query.get(form.stockwerke.data)
+    if form.validate_on_submit():
+        bezeichnung = form.bezeichnung.data
+        if Stockwerke.query.filter_by(bezeichnung=bezeichnung).first():
+            flash("Diese Kostenart gibt es schon!")
+            return redirect(url_for('kostenarten'))
+        stockwerke.bezeichnung = bezeichnung
+        db.session.commit()
+        flash("Stockwerk erfolgreich aktualisiert!")
+        return redirect(url_for('stockwerke'))
+    else:
+        print(form.errors)
+    return render_template(
+        'edit_stockwerke.html',
+        form=form,
+        legend="Stockwerke bearbeiten",
+        action=url_for('edit_stockwerke')
+        )
 
-@app.route("/umlageschluessel/add_umlageschluessel", methods=["GET", "POST"])
+
+@app.route("/delete_stockwerke", methods=["GET", "POST"])
+@login_required
+def delete_stockwerke():
+    form = DeleteStockwerke()
+    if form.validate_on_submit():
+        stockwerke = Stockwerke.query.get(form.stockwerke.data)
+        db.session.delete(stockwerke)
+        db.session.commit()
+        flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
+        return redirect(url_for('stockwerke'))
+
+    return render_template(
+        "delete_stockwerke.html",
+        form=form,
+        legend="Datensatz löschen",
+        action=url_for('delete_stockwerke')
+    )
+
+
+@app.route("/umlageschluessel")
+@login_required
+def umlageschluessel():
+    schluessel = Umlageschluessel.query.all()
+    return render_template("umlageschluessel.html", title="Umlageschlüssel", schluessel=schluessel)
+
+@app.route("/add_umlageschluessel", methods=["GET", "POST"])
 @login_required
 def add_umlageschluessel():
     form = AddUmlageschluessel()
     if form.validate_on_submit():
-        post = Umlageschluessel(bezeichnung=form.bezeichnung.data)
-        db.session.add(post)
+        umlageschluessel = Umlageschluessel(
+            bezeichnung=form.bezeichnung.data,
+            tabelle1=form.tabelle1.data,
+            wert1=form.wert1.data,
+            tabelle2=form.tabelle2.data,
+            wert2=form.wert2.data,
+            operation=form.operation.data,
+        )
+        db.session.add(umlageschluessel)
         db.session.commit()
         flash("Datensatz wurde angelegt.", "success")
         return redirect(url_for("umlageschluessel"))
@@ -192,6 +357,55 @@ def add_umlageschluessel():
         title="Umlageschlüssel hinzufügen",
         form=form,
         legend="Umlageschlüssel hinzufügen",
+    )
+
+
+@app.route('/edit_umlageschluessel', methods=['GET', 'POST'])
+def edit_umlageschluessel():
+    form = EditUmlageschluessel()
+    #umlageschluessel = Umlageschluessel.query.get(form.data)
+    if form.validate_on_submit():
+        bezeichnung = form.bezeichnung.data
+        # if Umlageschluessel.query.filter_by(bezeichnung=bezeichnung).first():
+        #     flash("Diesen Schlüssel gibt es schon!")
+        #     return redirect(url_for('umlageschluessel'))
+        umlageschluessel = Umlageschluessel(
+            bezeichnung=form.bezeichnung.data,
+            tabelle1=form.tabelle1.data,
+            wert1=form.wert1.data,
+            tabelle2=form.tabelle2.data,
+            wert2=form.wert2.data,
+            operation=form.operation.data,
+        )
+        db.session.commit()
+        flash("Schlüssel erfolgreich aktualisiert!")
+        return redirect(url_for('umlageschluessel'))
+    else:
+        print(form.errors)
+    return render_template(
+        'edit_umlageschluessel.html',
+        form=form,
+        legend="Umlageschluessel bearbeiten",
+        action=url_for('edit_umlageschluessel')
+        )
+
+
+@app.route("/delete_umlageschluessel", methods=["GET", "POST"])
+@login_required
+def delete_umlageschluessel():
+    form = DeleteUmlageschluessel()
+    if form.validate_on_submit():
+        umlageschluessel = Umlageschluessel.query.get(form.umlageschluessel.data)
+        db.session.delete(umlageschluessel)
+        db.session.commit()
+        flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
+        return redirect(url_for('umlageschluessel'))
+
+    return render_template(
+        "delete_umlageschluessel.html",
+        form=form,
+        legend="Datensatz löschen",
+        action=url_for('delete_umlageschluessel')
     )
 
 
@@ -238,7 +452,11 @@ def verwaltung():
     return render_template("verwaltung.html", title="Verwaltung")
 
 
-
+@app.route("/wohnungen")
+@login_required
+def wohnungen():
+    wohnungen = Wohnungen.query.all()
+    return render_template("wohnungen.html", title="Wohnungen", wohnungen=wohnungen)
 
 @app.route("/wohnungen/add_wohnung", methods=["GET", "POST"])
 @login_required
@@ -257,7 +475,11 @@ def add_wohnung():
         legend="Wohnung hinzufügen",
     )
 
-
+@app.route("/zaehler")
+@login_required
+def zaehler():
+    zaehler = Zaehler.query.all()
+    return render_template("zaehler.html", title="Zähler", zaehler=zaehler)
 
 @app.route("/zaehler/add_zaehler", methods=["GET", "POST"])
 @login_required
@@ -277,7 +499,11 @@ def add_zaehler():
     )
 
 
-
+@app.route("/zaehlertypen")
+@login_required
+def zaehlertypen():
+    bezeichnung = Zaehlertypen.query.all()
+    return render_template("zaehlertypen.html", title="Zählertypen", bezeichnung=bezeichnung)
 
 
 @app.route("/zaehlertypen/add_zaehlertyp", methods=["GET", "POST"])
