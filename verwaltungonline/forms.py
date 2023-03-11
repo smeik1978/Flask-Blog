@@ -183,20 +183,20 @@ class AddKosten(FlaskForm):
 
 
 class EditKosten(FlaskForm):
-    curdatum = DateField("Datum", validators=[DataRequired()])
-    curabrechnungsjahr = StringField("Abrechnungsjahr", validators=[DataRequired(), Length(max=4)])
-    curkostenart = SelectField("Kostenart", validators=[DataRequired()])
-    curfirma = StringField("Firma", validators=[DataRequired(), Length(max=30)])
-    curleistung = SelectField("Leistung", choices=[])
-    curbetrag = FloatField("Betrag", validators=[DataRequired()])
-    curmenge = IntegerField("Menge", validators=[DataRequired(), Length(max=10)])
-    cureinheit = SelectField("Einheit", validators=[DataRequired()])
-    curumlageschluessel = SelectField("Umlageschluessel", validators=[DataRequired()])
+    datum = DateField("Datum", validators=[DataRequired()])
+    abrechnungsjahr = StringField("Abrechnungsjahr", validators=[DataRequired(), Length(max=4)])
+    kostenart = SelectField("Kostenart", choices=[], validators=[DataRequired()])
+    firma = StringField("Firma", validators=[DataRequired(), Length(max=30)])
+    leistung = SelectField("Leistung", choices=[])
+    betrag = FloatField("Betrag", validators=[DataRequired()])
+    menge = IntegerField("Menge", validators=[DataRequired()])
+    einheit = SelectField("Einheit", choices=[], validators=[DataRequired()])
+    umlageschluessel = SelectField("Umlageschluessel", choices=[], validators=[DataRequired()])
     submit = SubmitField('Speichern')
 
     def __init__(self, *args, **kwargs):
         super(EditKosten, self).__init__(*args, **kwargs)
-        self.curleistung.choices = [(e.id, e.leistung) for e in Kosten.query.all()]
+        self.leistung.choices = [(e.id, e.leistung) for e in Kosten.query.all()]
         #self.curdatum = Kosten.query.filter_by(self.curleistung.id)
 
 

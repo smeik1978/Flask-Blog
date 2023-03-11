@@ -7,7 +7,7 @@ from wsgiref.util import request_uri
 from PIL import Image
 from sqlalchemy import text
 from sqlalchemy.orm import class_mapper
-from flask import get_flashed_messages, render_template, url_for, flash, redirect, request, abort, current_app
+from flask import get_flashed_messages, render_template, url_for, flash, redirect, request, abort, current_app, jsonify
 from verwaltungonline import app, db, bcrypt
 from verwaltungonline.forms import (
     RegistrationForm, LoginForm, UpdateAccountForm, PostForm,
@@ -231,22 +231,19 @@ def add_kosten():
 @app.route('/edit_kosten', methods=['GET', 'POST'])
 def edit_kosten():
     form = EditKosten()
-    #kosten = Kosten.query.get(form.kosten.data)
+    kosten = Kosten.query.all()
     if form.validate_on_submit():
-        leistung = form.leistung.data
-        # if Umlageschluessel.query.filter_by(bezeichnung=bezeichnung).first():
-        #     flash("Diesen Schlüssel gibt es schon!")
-        #     return redirect(url_for('umlageschluessel'))
+        kosten = form.kosten.data
         kosten = Kosten(
             datum=form.datum.data,
             abrechnungsjahr=form.abrechnungsjahr.data,
             kostenart=form.kostenart.data,
-            firma=form.firma.data,
+            # firma=form.firma.data,
             leistung=form.leistung.data,
-            betrag=form.betrag.data,
-            menge=form.menge.data,
-            einheit=form.einheit.data,
-            umlageschluessel=form.umlageschluessel.data,
+            # betrag=form.betrag.data,
+            # menge=form.menge.data,
+            # einheit=form.einheit.data,
+            # umlageschluessel=form.umlageschluessel.data,
         )
         if Kosten.query.filter_by(leistung=leistung).first():
             flash("Diese Kosten gibt es schon!")
@@ -260,8 +257,30 @@ def edit_kosten():
         'edit_kosten.html',
         form=form,
         legend="Kosten bearbeiten",
-        action=url_for('edit_kosten')
+        action=url_for('edit_kosten'),
+        kosten=kosten
         )
+
+@app.route('/get_data', methods=['POST'])
+def get_data():
+    data = request.get_json()
+    print(data)
+    # Wir bekommen via json den Namen (nicht Inhalt) des selektierten Wertes (z.B. leistung oder kostenart) und dessen ID in der Select-Liste
+    # Anhand des Namens müsste man das DB Model herausfinden und die Elemente loopen.
+    # for element in elements: -> fülle die Liste mit elementname : qResult.elementname
+    # Das müsste dann eine universellere Lösung zum Auslesen der Select-Fields sein.
+    # data["abrechnungsjahr"] : qResult.abrechnungsjahr
+    # same for JS :-/ , for each oder so
+    qResult = Kosten.query.filter_by(id=data['id']).first()
+    if qResult:
+        data = {
+            'abrechnungsjahr': qResult.abrechnungsjahr
+        }
+
+        return jsonify(data)
+    else:
+        return jsonify({'error': 'Kosten nicht gefunden'})
+
 
 
 @app.route("/delete_kosten", methods=["GET", "POST"])
