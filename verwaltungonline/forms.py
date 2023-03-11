@@ -9,13 +9,15 @@ from wtforms import (
     TextAreaField,
     IntegerField,
     DateField,
-    SelectField
+    SelectField,
+    FloatField
 )
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from verwaltungonline.models import (
     User,
     Einheiten,
     Gemeinschaft,
+    Kosten,
     Kostenarten,
     Stockwerke,
     Umlageschluessel,
@@ -154,6 +156,59 @@ class DeleteGemeinschaft(FlaskForm):
         self.gemeinschaft.choices = [(str(e.id), e.bezeichnung) for e in Gemeinschaft.query.all()]
 
 
+class AddKosten(FlaskForm):
+    datum = DateField("Datum", validators=[DataRequired()])
+    abrechnungsjahr = StringField("Abrechnungsjahr", validators=[DataRequired(), Length(max=4)])
+    kostenart = SelectField("Kostenart", choices=[], validators=[DataRequired()])
+    firma = StringField("Firma", validators=[DataRequired(), Length(max=30)])
+    leistung = StringField("Leistung", validators=[DataRequired(), Length(max=30)])
+    betrag = FloatField("Betrag", validators=[DataRequired()])
+    menge = IntegerField("Menge", validators=[DataRequired()])
+    einheit = SelectField("Einheit", choices=[], validators=[DataRequired()])
+    umlageschluessel = SelectField("Umlageschluessel", choices=[], validators=[DataRequired()])
+    submit = SubmitField("Speichern")
+
+    def __init__(self, *args, **kwargs):
+        super(AddKosten, self).__init__(*args, **kwargs)
+        self.kostenart.choices = [(e.id, e.bezeichnung) for e in Kostenarten.query.all()]
+        self.einheit.choices = [(e.id, e.bezeichnung) for e in Einheiten.query.all()]
+        self.umlageschluessel.choices = [(e.id, e.bezeichnung) for e in Umlageschluessel.query.all()]
+
+    def validate_bezeichnung(self, bezeichnung):
+        leistung = Kosten.query.filter_by(
+            leistung=leistung.data
+        ).first()
+        if leistung:
+            raise ValidationError("Diese Leistung gibt es schon!")
+
+
+class EditKosten(FlaskForm):
+    curdatum = DateField("Datum", validators=[DataRequired()])
+    curabrechnungsjahr = StringField("Abrechnungsjahr", validators=[DataRequired(), Length(max=4)])
+    curkostenart = SelectField("Kostenart", validators=[DataRequired()])
+    curfirma = StringField("Firma", validators=[DataRequired(), Length(max=30)])
+    curleistung = SelectField("Leistung", choices=[])
+    curbetrag = FloatField("Betrag", validators=[DataRequired()])
+    curmenge = IntegerField("Menge", validators=[DataRequired(), Length(max=10)])
+    cureinheit = SelectField("Einheit", validators=[DataRequired()])
+    curumlageschluessel = SelectField("Umlageschluessel", validators=[DataRequired()])
+    submit = SubmitField('Speichern')
+
+    def __init__(self, *args, **kwargs):
+        super(EditKosten, self).__init__(*args, **kwargs)
+        self.curleistung.choices = [(e.id, e.leistung) for e in Kosten.query.all()]
+        #self.curdatum = Kosten.query.filter_by(self.curleistung.id)
+
+
+class DeleteKosten(FlaskForm):
+    leistung = SelectField('Leistung', choices=[], validators=[DataRequired()])
+    submit = SubmitField('Löschen')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.leistung.choices = [(str(e.id), e.leistung) for e in Kosten.query.all()]
+
+
 class AddKostenart(FlaskForm):
     bezeichnung = StringField(
         "Bezeichnung", validators=[DataRequired(), Length(max=25)]
@@ -265,6 +320,7 @@ class DeleteUmlageschluessel(FlaskForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.umlageschluessel.choices = [(str(e.id), e.bezeichnung) for e in Umlageschluessel.query.all()]
+
 
 class AddWohnung(FlaskForm):
     bezeichnung = StringField(

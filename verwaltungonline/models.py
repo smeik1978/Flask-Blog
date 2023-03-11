@@ -139,5 +139,21 @@ class Zaehlertypen(db.Model):
         return super().__repr__()
 
 
+class Kosten(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    datum = db.Column(db.Date, nullable=False)
+    abrechnungsjahr = db.Column(db.String(4), nullable=False)
+    kostenart = db.Column(db.ForeignKey(Kostenarten.bezeichnung))
+    firma = db.Column(db.String(30), nullable=False)
+    leistung = db.Column(db.String(30), nullable=False)
+    betrag = db.Column(db.Float(precision=2), nullable=False)
+    menge = db.Column(db.Integer, nullable=False)
+    einheit = db.Column(db.ForeignKey(Einheiten.bezeichnung))
+    umlageschluessel = db.Column(db.ForeignKey(Umlageschluessel.bezeichnung))
+    
+    def __repr__(self) -> str:
+        return super().__repr__()
+
+
 with app.app_context():
     db.create_all()

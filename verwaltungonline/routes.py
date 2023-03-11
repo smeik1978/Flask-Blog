@@ -13,13 +13,15 @@ from verwaltungonline.forms import (
     RegistrationForm, LoginForm, UpdateAccountForm, PostForm,
     AddEinheit, AddGemeinschaft, AddKostenart, AddStockwerk, AddUmlageschluessel, AddVermietung, AddWohnung, AddZaehler, AddZaehlertyp,
     EditEinheit, DeleteEinheit, EditGemeinschaft, DeleteGemeinschaft, EditKostenarten, DeleteKostenarten, EditStockwerke, DeleteStockwerke,
-    EditUmlageschluessel, DeleteUmlageschluessel, EditWohnungen, DeleteWohnungen, EditZaehler, DeleteZaehler, EditZaehlertypen, DeleteZaehlertypen
+    EditUmlageschluessel, DeleteUmlageschluessel, EditWohnungen, DeleteWohnungen, EditZaehler, DeleteZaehler, EditZaehlertypen, DeleteZaehlertypen,
+    AddKosten, EditKosten, DeleteKosten
 )
 from verwaltungonline.models import (
     User,
     Post,
     Einheiten,
     Gemeinschaft,
+    Kosten,
     Kostenarten,
     Stockwerke,
     Umlageschluessel,
@@ -186,6 +188,98 @@ def delete_gemeinschaft():
         form=form,
         legend="Datensatz löschen",
         action=url_for('delete_gemeinschaft')
+    )
+
+
+@app.route("/kosten")
+@login_required
+def kosten():
+    kosten = Kosten.query.all()
+    return render_template("kosten.html", title="Kosten", kosten=kosten)
+
+
+@app.route("/add_kosten", methods=["GET", "POST"])
+@login_required
+def add_kosten():
+    form = AddKosten()
+    if form.validate_on_submit():
+        kosten = Kosten(
+            datum=form.datum.data,
+            abrechnungsjahr=form.abrechnungsjahr.data,
+            kostenart=form.kostenart.data,
+            firma=form.firma.data,
+            leistung=form.leistung.data,
+            betrag=form.betrag.data,
+            menge=form.menge.data,
+            einheit=form.einheit.data,
+            umlageschluessel=form.umlageschluessel.data,
+        )
+        db.session.add(kosten)
+        db.session.commit()
+        flash("Datensatz wurde angelegt.", "success")
+        return redirect(url_for("kosten"))
+    else:
+        print(form.errors)
+    return render_template(
+        "add_kosten.html",
+        title="Kosten hinzufügen",
+        form=form,
+        legend="Kosten hinzufügen",
+    )
+
+
+@app.route('/edit_kosten', methods=['GET', 'POST'])
+def edit_kosten():
+    form = EditKosten()
+    #kosten = Kosten.query.get(form.kosten.data)
+    if form.validate_on_submit():
+        leistung = form.leistung.data
+        # if Umlageschluessel.query.filter_by(bezeichnung=bezeichnung).first():
+        #     flash("Diesen Schlüssel gibt es schon!")
+        #     return redirect(url_for('umlageschluessel'))
+        kosten = Kosten(
+            datum=form.datum.data,
+            abrechnungsjahr=form.abrechnungsjahr.data,
+            kostenart=form.kostenart.data,
+            firma=form.firma.data,
+            leistung=form.leistung.data,
+            betrag=form.betrag.data,
+            menge=form.menge.data,
+            einheit=form.einheit.data,
+            umlageschluessel=form.umlageschluessel.data,
+        )
+        if Kosten.query.filter_by(leistung=leistung).first():
+            flash("Diese Kosten gibt es schon!")
+            return redirect(url_for('kosten'))
+        db.session.commit()
+        flash("Kosten erfolgreich aktualisiert!")
+        return redirect(url_for('kosten'))
+    else:
+        print(form.errors)
+    return render_template(
+        'edit_kosten.html',
+        form=form,
+        legend="Kosten bearbeiten",
+        action=url_for('edit_kosten')
+        )
+
+
+@app.route("/delete_kosten", methods=["GET", "POST"])
+@login_required
+def delete_kosten():
+    form = DeleteKosten()
+    if form.validate_on_submit():
+        kosten = Kosten.query.get(form.kosten.data)
+        db.session.delete(kosten)
+        db.session.commit()
+        flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
+        return redirect(url_for('kosten'))
+
+    return render_template(
+        "delete_kosten.html",
+        form=form,
+        legend="Datensatz löschen",
+        action=url_for('delete_kosten')
     )
 
 
