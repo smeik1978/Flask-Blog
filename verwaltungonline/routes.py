@@ -5,8 +5,8 @@ from pyexpat.errors import messages
 import secrets
 from wsgiref.util import request_uri
 from PIL import Image
-from sqlalchemy import text
-from sqlalchemy.orm import class_mapper
+from sqlalchemy import inspect, text, create_engine
+from sqlalchemy.orm import class_mapper, scoped_session, sessionmaker
 from flask import get_flashed_messages, render_template, url_for, flash, redirect, request, abort, current_app, jsonify
 from verwaltungonline import app, db, bcrypt
 from verwaltungonline.forms import (
@@ -31,6 +31,7 @@ from verwaltungonline.models import (
     Zaehlertypen,
 )
 from flask_login import login_user, current_user, logout_user, login_required
+from .modules import query_models
 
 
 # Funktionen für Seiten
@@ -232,6 +233,31 @@ def add_kosten():
 def edit_kosten():
     form = EditKosten()
     kosten = Kosten.query.all()
+    if request.method == 'POST':
+        data = request.get_json()
+        #print(data)
+        qResult = Kosten.query.filter_by(id=data['id']).first()
+        qResult = Kosten
+        print(qResult)
+        mapper = inspect(qResult)
+        #print(mapper.column_attrs)
+        for attrs in mapper.column_attrs:
+            pass #print(attrs)
+        #print(mapper.attrs)
+        data = {}
+        for column in mapper.attrs:
+            if column.key != 'id':
+                #print(column.key)
+                data[column.key] = Kosten.query.filter_by(id=column.key)
+        print(data)
+        # if qResult:
+        #     data = {
+        #         'abrechnungsjahr': qResult.abrechnungsjahr,
+        #         'kostenart' : qResult.kostenart
+        #     }
+        #return jsonify(data)
+        
+    
     if form.validate_on_submit():
         kosten = form.kosten.data
         kosten = Kosten(
