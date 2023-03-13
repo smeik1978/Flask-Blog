@@ -60,6 +60,25 @@ class Kostenarten(db.Model):
         return super().__repr__()
 
 
+class Kosten(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    datum = db.Column(db.Date, nullable=False)
+    abrechnungsjahr = db.Column(db.String(4), nullable=False)
+    kostenarten_id = db.Column(db.ForeignKey('kostenarten.id', name='fk_kosten_kostenart_id'))
+    firma = db.Column(db.String(30), nullable=False)
+    leistung = db.Column(db.String(30), nullable=False)
+    betrag = db.Column(db.Float(precision=2), nullable=False)
+    menge = db.Column(db.Integer, nullable=False)
+    einheiten_id = db.Column(db.ForeignKey('einheiten.id', name='fk_kosten_einheit_id'))
+    umlageschluessel_id = db.Column(db.ForeignKey('umlageschluessel.id', name='fk_kosten_umlageschluessel_id'))
+    kostenart_object = db.relationship('Kostenarten', backref='kosten', foreign_keys=[kostenarten_id])
+    einheit_object = db.relationship('Einheiten', backref='kosten', foreign_keys=[einheiten_id])
+    umlageschluessel_object = db.relationship('Umlageschluessel', backref='kosten', foreign_keys=[umlageschluessel_id])
+
+    def __repr__(self):
+        return super().__repr__()
+
+
 class Stockwerke(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bezeichnung = db.Column(db.String(25), unique=True, nullable=False)
@@ -135,22 +154,6 @@ class Zaehlertypen(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bezeichnung = db.Column(db.String(25), unique=True, nullable=False)
 
-    def __repr__(self) -> str:
-        return super().__repr__()
-
-
-class Kosten(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    datum = db.Column(db.Date, nullable=False)
-    abrechnungsjahr = db.Column(db.String(4), nullable=False)
-    kostenart = db.Column(db.ForeignKey(Kostenarten.bezeichnung))
-    firma = db.Column(db.String(30), nullable=False)
-    leistung = db.Column(db.String(30), nullable=False)
-    betrag = db.Column(db.Float(precision=2), nullable=False)
-    menge = db.Column(db.Integer, nullable=False)
-    einheit = db.Column(db.ForeignKey(Einheiten.bezeichnung))
-    umlageschluessel = db.Column(db.ForeignKey(Umlageschluessel.bezeichnung))
-    
     def __repr__(self) -> str:
         return super().__repr__()
 

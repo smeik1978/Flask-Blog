@@ -1,3 +1,4 @@
+import sqlalchemy
 from crypt import methods
 from curses import keyname
 import os
@@ -7,14 +8,52 @@ from wsgiref.util import request_uri
 from PIL import Image
 from sqlalchemy import inspect, text, create_engine
 from sqlalchemy.orm import class_mapper, scoped_session, sessionmaker
-from flask import get_flashed_messages, render_template, url_for, flash, redirect, request, abort, current_app, jsonify
+import verwaltungonline.models as models
+from flask import (
+    get_flashed_messages,
+    render_template,
+    url_for,
+    flash,
+    redirect,
+    request,
+    abort,
+    current_app,
+    jsonify
+)
 from verwaltungonline import app, db, bcrypt
 from verwaltungonline.forms import (
-    RegistrationForm, LoginForm, UpdateAccountForm, PostForm,
-    AddEinheit, AddGemeinschaft, AddKostenart, AddStockwerk, AddUmlageschluessel, AddVermietung, AddWohnung, AddZaehler, AddZaehlertyp,
-    EditEinheit, DeleteEinheit, EditGemeinschaft, DeleteGemeinschaft, EditKostenarten, DeleteKostenarten, EditStockwerke, DeleteStockwerke,
-    EditUmlageschluessel, DeleteUmlageschluessel, EditWohnungen, DeleteWohnungen, EditZaehler, DeleteZaehler, EditZaehlertypen, DeleteZaehlertypen,
-    AddKosten, EditKosten, DeleteKosten
+    RegistrationForm,
+    LoginForm,
+    UpdateAccountForm,
+    PostForm,
+    AddEinheit,
+    AddGemeinschaft,
+    AddKostenart,
+    AddStockwerk,
+    AddUmlageschluessel,
+    AddVermietung,
+    AddWohnung,
+    AddZaehler,
+    AddZaehlertyp,
+    EditEinheit,
+    DeleteEinheit,
+    EditGemeinschaft,
+    DeleteGemeinschaft,
+    EditKostenarten,
+    DeleteKostenarten,
+    EditStockwerke,
+    DeleteStockwerke,
+    EditUmlageschluessel,
+    DeleteUmlageschluessel,
+    EditWohnungen,
+    DeleteWohnungen,
+    EditZaehler,
+    DeleteZaehler,
+    EditZaehlertypen,
+    DeleteZaehlertypen,
+    AddKosten,
+    EditKosten,
+    DeleteKosten,
 )
 from verwaltungonline.models import (
     User,
@@ -36,13 +75,12 @@ from .modules import query_models
 
 # Funktionen für Seiten
 
+
 @app.route("/")
 @app.route("/home")
 def home():
     posts = Post.query.all()
     return render_template("home.html", posts=posts)
-
-
 
 
 @app.route("/ablesung")
@@ -53,12 +91,13 @@ def ablesung():
         "ablesung.html", title="Ablesung", bezeichnungen=bezeichnungen
     )
 
+
 @app.route("/about")
 def about():
     return render_template("about.html", title="About")
 
 
-@app.route('/einheiten')
+@app.route("/einheiten")
 @login_required
 def einheiten():
     einheiten = Einheiten.query.all()
@@ -80,10 +119,11 @@ def add_einheiten():
         title="Einheit hinzufügen",
         form=form,
         legend="Einheit hinzufügen",
-        action=url_for('add_einheiten')
+        action=url_for("add_einheiten"),
     )
 
-@app.route('/edit_einheiten', methods=['GET', 'POST'])
+
+@app.route("/edit_einheiten", methods=["GET", "POST"])
 def edit_einheiten():
     form = EditEinheit()
     einheit = Einheiten.query.get(form.einheit.data)
@@ -91,19 +131,19 @@ def edit_einheiten():
         bezeichnung = form.bezeichnung.data
         if Einheiten.query.filter_by(bezeichnung=bezeichnung).first():
             flash("Diese Einheit gibt es schon!")
-            return redirect(url_for('einheiten'))
+            return redirect(url_for("einheiten"))
         einheit.bezeichnung = bezeichnung
         db.session.commit()
         flash("Einheit erfolgreich aktualisiert!")
-        return redirect(url_for('einheiten'))
+        return redirect(url_for("einheiten"))
     else:
         print(form.errors)
     return render_template(
-        'edit_einheiten.html',
+        "edit_einheiten.html",
         form=form,
         legend="Einheit bearbeiten",
-        action=url_for('edit_einheiten')
-        )
+        action=url_for("edit_einheiten"),
+    )
 
 
 @app.route("/delete_einheiten", methods=["GET", "POST"])
@@ -115,13 +155,13 @@ def delete_einheiten():
         db.session.delete(einheit)
         db.session.commit()
         flash("Die Einheit wurde erfolgreich gelöscht.", "success")
-        return redirect(url_for('einheiten'))
+        return redirect(url_for("einheiten"))
 
     return render_template(
         "delete_einheiten.html",
         form=form,
         legend="Einheit löschen",
-        action=url_for('delete_einheiten')
+        action=url_for("delete_einheiten"),
     )
 
 
@@ -129,7 +169,9 @@ def delete_einheiten():
 @login_required
 def gemeinschaft():
     gemeinschaft = Gemeinschaft.query.all()
-    return render_template("gemeinschaft.html", title="Gemeinschaftslächen", gemeinschaft=gemeinschaft)
+    return render_template(
+        "gemeinschaft.html", title="Gemeinschaftslächen", gemeinschaft=gemeinschaft
+    )
 
 
 @app.route("/add_gemeinschaft", methods=["GET", "POST"])
@@ -150,7 +192,7 @@ def add_gemeinschaft():
     )
 
 
-@app.route('/edit_gemeinschaft', methods=['GET', 'POST'])
+@app.route("/edit_gemeinschaft", methods=["GET", "POST"])
 def edit_gemeinschaft():
     form = EditGemeinschaft()
     gemeinschaft = Gemeinschaft.query.get(form.gemeinschaft.data)
@@ -158,19 +200,19 @@ def edit_gemeinschaft():
         bezeichnung = form.bezeichnung.data
         if Gemeinschaft.query.filter_by(bezeichnung=bezeichnung).first():
             flash("Diese Gemeinschaftsfläche gibt es schon!")
-            return redirect(url_for('gemeinschaft'))
+            return redirect(url_for("gemeinschaft"))
         gemeinschaft.bezeichnung = bezeichnung
         db.session.commit()
         flash("Datensatz erfolgreich aktualisiert!")
-        return redirect(url_for('gemeinschaft'))
+        return redirect(url_for("gemeinschaft"))
     else:
         print(form.errors)
     return render_template(
-        'edit_gemeinschaft.html',
+        "edit_gemeinschaft.html",
         form=form,
         legend="Datensatz bearbeiten",
-        action=url_for('edit_gemeinschaft')
-        )
+        action=url_for("edit_gemeinschaft"),
+    )
 
 
 @app.route("/delete_gemeinschaft", methods=["GET", "POST"])
@@ -182,13 +224,13 @@ def delete_gemeinschaft():
         db.session.delete(gemeinschaft)
         db.session.commit()
         flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
-        return redirect(url_for('gemeinschaft'))
+        return redirect(url_for("gemeinschaft"))
 
     return render_template(
         "delete_gemeinschaft.html",
         form=form,
         legend="Datensatz löschen",
-        action=url_for('delete_gemeinschaft')
+        action=url_for("delete_gemeinschaft"),
     )
 
 
@@ -207,13 +249,13 @@ def add_kosten():
         kosten = Kosten(
             datum=form.datum.data,
             abrechnungsjahr=form.abrechnungsjahr.data,
-            kostenart=form.kostenart.data,
+            kostenart_id=form.kostenart.data,
             firma=form.firma.data,
             leistung=form.leistung.data,
             betrag=form.betrag.data,
             menge=form.menge.data,
-            einheit=form.einheit.data,
-            umlageschluessel=form.umlageschluessel.data,
+            einheit_id=form.einheit.data,
+            umlageschluessel_id=form.umlageschluessel.data,
         )
         db.session.add(kosten)
         db.session.commit()
@@ -229,35 +271,30 @@ def add_kosten():
     )
 
 
-@app.route('/edit_kosten', methods=['GET', 'POST'])
+@app.route("/edit_kosten", methods=["GET", "POST"])
 def edit_kosten():
     form = EditKosten()
     kosten = Kosten.query.all()
-    if request.method == 'POST':
+    if request.method == "POST":
         data = request.get_json()
-        #print(data)
-        qResult = Kosten.query.filter_by(id=data['id']).first()
-        qResult = Kosten
-        print(qResult)
-        mapper = inspect(qResult)
-        #print(mapper.column_attrs)
-        for attrs in mapper.column_attrs:
-            pass #print(attrs)
-        #print(mapper.attrs)
+        # print(data)
+        # qResult = Kosten.query.filter_by(id=data['id']).first()
+        qResult = Kosten.query.get(data["id"])
+        qResult_dict = qResult.__dict__
+        print(qResult_dict)
+        qResult_list = list(qResult_dict.items())[2][1]
+        print(qResult_list)
+        # print(type(qResult))
+        mapper = inspect(Kosten)
         data = {}
+        i = 1
         for column in mapper.attrs:
-            if column.key != 'id':
-                #print(column.key)
-                data[column.key] = Kosten.query.filter_by(id=column.key)
+            if column.key != "id":
+                data[column.key] = qResult_dict[column.key]
+                i = i + 1
         print(data)
-        # if qResult:
-        #     data = {
-        #         'abrechnungsjahr': qResult.abrechnungsjahr,
-        #         'kostenart' : qResult.kostenart
-        #     }
-        #return jsonify(data)
-        
-    
+        return jsonify(data)
+
     if form.validate_on_submit():
         kosten = form.kosten.data
         kosten = Kosten(
@@ -273,40 +310,32 @@ def edit_kosten():
         )
         if Kosten.query.filter_by(leistung=leistung).first():
             flash("Diese Kosten gibt es schon!")
-            return redirect(url_for('kosten'))
+            return redirect(url_for("kosten"))
         db.session.commit()
         flash("Kosten erfolgreich aktualisiert!")
-        return redirect(url_for('kosten'))
+        return redirect(url_for("kosten"))
     else:
-        print(form.errors)
+        pass  # print('Form-Errors: ', form.errors)
     return render_template(
-        'edit_kosten.html',
+        "edit_kosten.html",
         form=form,
         legend="Kosten bearbeiten",
-        action=url_for('edit_kosten'),
-        kosten=kosten
-        )
+        action=url_for("edit_kosten"),
+        kosten=kosten,
+    )
 
-@app.route('/get_data', methods=['POST'])
-def get_data():
+
+@app.route("/get_data/<model>", methods=["POST"])
+def get_data(model):
     data = request.get_json()
+    model = globals()[model]
     print(data)
-    # Wir bekommen via json den Namen (nicht Inhalt) des selektierten Wertes (z.B. leistung oder kostenart) und dessen ID in der Select-Liste
-    # Anhand des Namens müsste man das DB Model herausfinden und die Elemente loopen.
-    # for element in elements: -> fülle die Liste mit elementname : qResult.elementname
-    # Das müsste dann eine universellere Lösung zum Auslesen der Select-Fields sein.
-    # data["abrechnungsjahr"] : qResult.abrechnungsjahr
-    # same for JS :-/ , for each oder so
-    qResult = Kosten.query.filter_by(id=data['id']).first()
-    if qResult:
-        data = {
-            'abrechnungsjahr': qResult.abrechnungsjahr
-        }
-
-        return jsonify(data)
-    else:
-        return jsonify({'error': 'Kosten nicht gefunden'})
-
+    if data:
+        row = model.query.filter_by(id=data["id"]).first()
+        if row:
+            row_dict = get_full_row_dict(row)
+            return jsonify(row_dict)
+    return jsonify({"error": "Daten nicht gefunden"})
 
 
 @app.route("/delete_kosten", methods=["GET", "POST"])
@@ -318,13 +347,13 @@ def delete_kosten():
         db.session.delete(kosten)
         db.session.commit()
         flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
-        return redirect(url_for('kosten'))
+        return redirect(url_for("kosten"))
 
     return render_template(
         "delete_kosten.html",
         form=form,
         legend="Datensatz löschen",
-        action=url_for('delete_kosten')
+        action=url_for("delete_kosten"),
     )
 
 
@@ -332,7 +361,9 @@ def delete_kosten():
 @login_required
 def kostenarten():
     kostenarten = Kostenarten.query.all()
-    return render_template("kostenarten.html", title="Kostenarten", kostenarten=kostenarten)
+    return render_template(
+        "kostenarten.html", title="Kostenarten", kostenarten=kostenarten
+    )
 
 
 @app.route("/add_kostenarten", methods=["GET", "POST"])
@@ -353,7 +384,7 @@ def add_kostenarten():
     )
 
 
-@app.route('/edit_kostenarten', methods=['GET', 'POST'])
+@app.route("/edit_kostenarten", methods=["GET", "POST"])
 def edit_kostenarten():
     form = EditKostenarten()
     kostenarten = Kostenarten.query.get(form.kostenarten.data)
@@ -361,19 +392,19 @@ def edit_kostenarten():
         bezeichnung = form.bezeichnung.data
         if Kostenarten.query.filter_by(bezeichnung=bezeichnung).first():
             flash("Diese Kostenart gibt es schon!")
-            return redirect(url_for('kostenarten'))
+            return redirect(url_for("kostenarten"))
         kostenarten.bezeichnung = bezeichnung
         db.session.commit()
         flash("Kostenart erfolgreich aktualisiert!")
-        return redirect(url_for('kostenarten'))
+        return redirect(url_for("kostenarten"))
     else:
         print(form.errors)
     return render_template(
-        'edit_kostenarten.html',
+        "edit_kostenarten.html",
         form=form,
         legend="Kostenarten bearbeiten",
-        action=url_for('edit_kostenarten')
-        )
+        action=url_for("edit_kostenarten"),
+    )
 
 
 @app.route("/delete_kostenarten", methods=["GET", "POST"])
@@ -385,20 +416,20 @@ def delete_kostenarten():
         db.session.delete(kostenarten)
         db.session.commit()
         flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
-        return redirect(url_for('kostenarten'))
+        return redirect(url_for("kostenarten"))
 
     return render_template(
         "delete_kostenarten.html",
         form=form,
         legend="Datensatz löschen",
-        action=url_for('delete_kostenarten')
+        action=url_for("delete_kostenarten"),
     )
 
 
 @app.route("/stammdaten")
 @login_required
 def stammdaten():
-    return render_template('stammdaten.html')
+    return render_template("stammdaten.html")
 
 
 @app.route("/stockwerke")
@@ -426,7 +457,7 @@ def add_stockwerke():
     )
 
 
-@app.route('/edit_stockwerke', methods=['GET', 'POST'])
+@app.route("/edit_stockwerke", methods=["GET", "POST"])
 def edit_stockwerke():
     form = EditStockwerke()
     stockwerke = Stockwerke.query.get(form.stockwerke.data)
@@ -434,19 +465,19 @@ def edit_stockwerke():
         bezeichnung = form.bezeichnung.data
         if Stockwerke.query.filter_by(bezeichnung=bezeichnung).first():
             flash("Diese Kostenart gibt es schon!")
-            return redirect(url_for('kostenarten'))
+            return redirect(url_for("kostenarten"))
         stockwerke.bezeichnung = bezeichnung
         db.session.commit()
         flash("Stockwerk erfolgreich aktualisiert!")
-        return redirect(url_for('stockwerke'))
+        return redirect(url_for("stockwerke"))
     else:
         print(form.errors)
     return render_template(
-        'edit_stockwerke.html',
+        "edit_stockwerke.html",
         form=form,
         legend="Stockwerke bearbeiten",
-        action=url_for('edit_stockwerke')
-        )
+        action=url_for("edit_stockwerke"),
+    )
 
 
 @app.route("/delete_stockwerke", methods=["GET", "POST"])
@@ -458,13 +489,13 @@ def delete_stockwerke():
         db.session.delete(stockwerke)
         db.session.commit()
         flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
-        return redirect(url_for('stockwerke'))
+        return redirect(url_for("stockwerke"))
 
     return render_template(
         "delete_stockwerke.html",
         form=form,
         legend="Datensatz löschen",
-        action=url_for('delete_stockwerke')
+        action=url_for("delete_stockwerke"),
     )
 
 
@@ -472,7 +503,10 @@ def delete_stockwerke():
 @login_required
 def umlageschluessel():
     schluessel = Umlageschluessel.query.all()
-    return render_template("umlageschluessel.html", title="Umlageschlüssel", schluessel=schluessel)
+    return render_template(
+        "umlageschluessel.html", title="Umlageschlüssel", schluessel=schluessel
+    )
+
 
 @app.route("/add_umlageschluessel", methods=["GET", "POST"])
 @login_required
@@ -499,10 +533,10 @@ def add_umlageschluessel():
     )
 
 
-@app.route('/edit_umlageschluessel', methods=['GET', 'POST'])
+@app.route("/edit_umlageschluessel", methods=["GET", "POST"])
 def edit_umlageschluessel():
     form = EditUmlageschluessel()
-    #umlageschluessel = Umlageschluessel.query.get(form.data)
+    # umlageschluessel = Umlageschluessel.query.get(form.data)
     if form.validate_on_submit():
         bezeichnung = form.bezeichnung.data
         # if Umlageschluessel.query.filter_by(bezeichnung=bezeichnung).first():
@@ -518,15 +552,15 @@ def edit_umlageschluessel():
         )
         db.session.commit()
         flash("Schlüssel erfolgreich aktualisiert!")
-        return redirect(url_for('umlageschluessel'))
+        return redirect(url_for("umlageschluessel"))
     else:
         print(form.errors)
     return render_template(
-        'edit_umlageschluessel.html',
+        "edit_umlageschluessel.html",
         form=form,
         legend="Umlageschluessel bearbeiten",
-        action=url_for('edit_umlageschluessel')
-        )
+        action=url_for("edit_umlageschluessel"),
+    )
 
 
 @app.route("/delete_umlageschluessel", methods=["GET", "POST"])
@@ -538,13 +572,13 @@ def delete_umlageschluessel():
         db.session.delete(umlageschluessel)
         db.session.commit()
         flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
-        return redirect(url_for('umlageschluessel'))
+        return redirect(url_for("umlageschluessel"))
 
     return render_template(
         "delete_umlageschluessel.html",
         form=form,
         legend="Datensatz löschen",
-        action=url_for('delete_umlageschluessel')
+        action=url_for("delete_umlageschluessel"),
     )
 
 
@@ -586,6 +620,7 @@ def add_vermietung():
         legend="Neue Mieter*in hinzufügen",
     )
 
+
 @app.route("/verwaltung")
 def verwaltung():
     return render_template("verwaltung.html", title="Verwaltung")
@@ -596,6 +631,7 @@ def verwaltung():
 def wohnungen():
     wohnungen = Wohnungen.query.all()
     return render_template("wohnungen.html", title="Wohnungen", wohnungen=wohnungen)
+
 
 @app.route("/wohnungen/add_wohnung", methods=["GET", "POST"])
 @login_required
@@ -614,11 +650,13 @@ def add_wohnung():
         legend="Wohnung hinzufügen",
     )
 
+
 @app.route("/zaehler")
 @login_required
 def zaehler():
     zaehler = Zaehler.query.all()
     return render_template("zaehler.html", title="Zähler", zaehler=zaehler)
+
 
 @app.route("/zaehler/add_zaehler", methods=["GET", "POST"])
 @login_required
@@ -642,7 +680,9 @@ def add_zaehler():
 @login_required
 def zaehlertypen():
     bezeichnung = Zaehlertypen.query.all()
-    return render_template("zaehlertypen.html", title="Zählertypen", bezeichnung=bezeichnung)
+    return render_template(
+        "zaehlertypen.html", title="Zählertypen", bezeichnung=bezeichnung
+    )
 
 
 @app.route("/zaehlertypen/add_zaehlertyp", methods=["GET", "POST"])
@@ -662,7 +702,9 @@ def add_zaehlertyp():
         legend="Zählertyp hinzufügen",
     )
 
+
 # Allgemeine Funktionen
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -795,3 +837,21 @@ def delete_post(post_id):
     db.session.commit()
     flash("Your post has been deleted!", "success")
     return redirect(url_for("home"))
+
+
+def get_full_row_dict(row):
+    row_dict = {}
+    for column in row.__table__.columns:
+        print(column)
+        if str(column.type) == "INTEGER" and column.name.endswith("_id"):
+            print(column.name)
+            related_model_name = column.name[:-3]
+            related_model = getattr(models, related_model_name.capitalize())
+            related_row = related_model.query.filter_by(id=getattr(row, column.name)).first()
+            if related_row:
+                print(row)
+                related_column_name = 'bezeichnung'  # TODO: hier automatisch den korrekten spaltennamen zurückgeben. wie in model 
+                row_dict[column.name] = getattr(related_row, related_column_name)
+        else:
+            row_dict[column.name] = getattr(row, column.name)
+    return row_dict

@@ -17,8 +17,12 @@ function updateDataFromDB(event) {
     })
     .then(response => response.json())
     .then(data => {
-      const abrechnungsjahrField = document.getElementById('abrechnungsjahr');
-      abrechnungsjahrField.value = data.abrechnungsjahr;
+      for (key in data) {
+        field = document.getElementById(key);
+        if (field) {
+          field.value = data[key];
+        }
+      }
     })
     .catch(error => {
       console.error('Error:', error);
@@ -26,7 +30,14 @@ function updateDataFromDB(event) {
   }
   
  
-  
+//   .then(data => {
+//     const abrechnungsjahrField = document.getElementById('abrechnungsjahr');
+//     abrechnungsjahrField.value = data.abrechnungsjahr;
+//   })
+//   .catch(error => {
+//     console.error('Error:', error);
+//   });
+// }
   
 
 // // Event-Handler für den Klick auf den "Hinzufügen" Button
