@@ -11,8 +11,12 @@
                 {{ form.hidden_tag() }}
                 <fieldset class="form-group">
                     <div class="form-group">
-                        {{ form.leistung.label(class="form-label") }}
-                        {{ form.leistung(class="form-control", onchange="updateDataFromDB(event)") }}
+                        {{ form.selleistung.label(class="form-label") }}
+                        {{ form.selleistung(class="form-control", onchange="updateDataFromDB(event)") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.leistung.label(class="form-control-label") }}
+                        {{ form.leistung(class="form-control") }}
                     </div>
                     <div class="form-group">
                         {{ form.datum.label(class="form-control-label") }}
@@ -23,8 +27,8 @@
                         {{ form.abrechnungsjahr(class="form-control") }}
                     </div>
                     <div class="form-group">
-                        {{ form.kostenart.label(class="form-control-label") }}
-                        {{ form.kostenart(class="form-control") }}
+                        {{ form.kostenarten.label(class="form-control-label") }}
+                        {{ form.kostenarten(class="form-control") }}
                     </div>
                     <div class="form-group">
                         {{ form.firma.label(class="form-control-label") }}
@@ -33,6 +37,18 @@
                     <div class="form-group">
                         {{ form.betrag.label(class="form-control-label") }}
                         {{ form.betrag(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.menge.label(class="form-control-label") }}
+                        {{ form.menge(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.einheiten.label(class="form-control-label") }}
+                        {{ form.einheiten(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.umlageschluessel.label(class="form-control-label") }}
+                        {{ form.umlageschluessel(class="form-control") }}
                     </div>
                 </fieldset>
                 <div class="form-group mt-3">

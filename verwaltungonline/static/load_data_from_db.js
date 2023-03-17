@@ -1,25 +1,26 @@
 function updateDataFromDB(event) {
-    const leistungSelect = event.target; // Das Select-Element, das das Leistungsfeld darstellt
-    const selectedOption = leistungSelect.options[leistungSelect.selectedIndex]; // Die ausgewählte Option
-    const name = leistungSelect.id
-    console.log(name);
-    const leistung = {
+    const name = event.target.id; // Der Name des getriggerten Select-Felds
+    const selectedOption = event.target.options[event.target.selectedIndex]; // Die ausgewählte Option des getriggerten Select-Felds
+    const message = {
       id: selectedOption.value,
       name: name
-    }; // Ein Objekt, das sowohl die ID als auch den Namen des ausgewählten Leistungsdatensatzes enthält
-    console.log(leistung);
-    fetch('/get_data', {
+    };
+    console.log(message);
+    fetch(window.location.href, {  // die aktuelle URL herausfinden und verwenden
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(leistung) // Das Leistungsfeld als JSON-Objekt codieren und an den Server senden
+      body: JSON.stringify(message) // Das Select-Feld als JSON-Objekt codieren und an den Server senden
     })
     .then(response => response.json())
     .then(data => {
+      console.log(data);
       for (key in data) {
         field = document.getElementById(key);
         if (field) {
+          //console.log(field);
+          //console.log(data[key]);
           field.value = data[key];
         }
       }
@@ -28,17 +29,8 @@ function updateDataFromDB(event) {
       console.error('Error:', error);
     });
   }
-  
  
-//   .then(data => {
-//     const abrechnungsjahrField = document.getElementById('abrechnungsjahr');
-//     abrechnungsjahrField.value = data.abrechnungsjahr;
-//   })
-//   .catch(error => {
-//     console.error('Error:', error);
-//   });
-// }
-  
+
 
 // // Event-Handler für den Klick auf den "Hinzufügen" Button
 // $('#add-btn').click(function() {

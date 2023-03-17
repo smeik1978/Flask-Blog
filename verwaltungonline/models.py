@@ -123,9 +123,8 @@ class Vermietung(db.Model):
 class Wohnungen(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nummer = db.Column(db.String(4), unique=True, nullable=False)
-    stockwerk = db.Column(db.String(25), unique=False, nullable=False)
-    # stockwerk = db.Column(db.Integer, db.ForeignKey('stockwerke.bezeichnung')
-    # ,nullable=False)
+    #stockwerk = db.Column(db.String(25), unique=False, nullable=False)
+    stockwerk = db.Column(db.Integer, db.ForeignKey('stockwerke.bezeichnung'), nullable=False)
     qm = db.Column(db.String(10), nullable=False)
     zimmer = db.Column(db.String(2), nullable=False)
 

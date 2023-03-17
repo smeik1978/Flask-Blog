@@ -183,21 +183,24 @@ class AddKosten(FlaskForm):
 
 
 class EditKosten(FlaskForm):
-    datum = DateField("Datum", validators=[DataRequired()])
+    datum = DateField("Datum", format='%Y-%m-%d', validators=[DataRequired()])
     abrechnungsjahr = StringField("Abrechnungsjahr", validators=[DataRequired(), Length(max=4)])
-    kostenart = SelectField("Kostenart", choices=[], validators=[DataRequired()])
+    kostenarten = SelectField("Kostenart", choices=[], validators=[DataRequired()])
     firma = StringField("Firma", validators=[DataRequired(), Length(max=30)])
-    leistung = SelectField("Leistung", choices=[])
+    selleistung = SelectField("Leistung", choices=[])
+    leistung = StringField("Neuer Wert für Leistung", validators=[DataRequired(), Length(max=30)])
     betrag = FloatField("Betrag", validators=[DataRequired()])
     menge = IntegerField("Menge", validators=[DataRequired()])
-    einheit = SelectField("Einheit", choices=[], validators=[DataRequired()])
+    einheiten = SelectField("Einheit", choices=[], validators=[DataRequired()])
     umlageschluessel = SelectField("Umlageschluessel", choices=[], validators=[DataRequired()])
     submit = SubmitField('Speichern')
 
     def __init__(self, *args, **kwargs):
         super(EditKosten, self).__init__(*args, **kwargs)
-        self.leistung.choices = [(e.id, e.leistung) for e in Kosten.query.all()]
-        #self.curdatum = Kosten.query.filter_by(self.curleistung.id)
+        self.selleistung.choices = [(e.id, e.leistung) for e in Kosten.query.all()]
+        self.kostenarten.choices = [(e.id, e.bezeichnung) for e in Kostenarten.query.all()]
+        self.einheiten.choices = [(e.id, e.bezeichnung) for e in Einheiten.query.all()]
+        self.umlageschluessel.choices = [(e.id, e.bezeichnung) for e in Umlageschluessel.query.all()]
 
 
 class DeleteKosten(FlaskForm):
@@ -323,34 +326,49 @@ class DeleteUmlageschluessel(FlaskForm):
 
 
 class AddWohnung(FlaskForm):
-    bezeichnung = StringField(
-        "Bezeichnung", validators=[DataRequired(), Length(max=25)]
-    )
+    nummer = StringField('Wohnung', validators=[DataRequired()])
+    stockwerk = SelectField('Stockwerk', choices=[], validators=[DataRequired()])
+    qm = StringField('Quadratmeter', validators=[DataRequired()])
+    zimmer = StringField('Zimmer', validators=[DataRequired()])
     submit = SubmitField("Speichern")
 
-    def validate_bezeichnung(self, bezeichnung):
-        wohnung = Wohnungen.query.filter_by(bezeichnung=bezeichnung.data).first()
-        if wohnung:
+    def validate_nummer(self, nummer):
+        nummer = Wohnungen.query.filter_by(nummer=nummer.data).first()
+        if nummer:
             raise ValidationError("Diese Wohnung gibt es schon!")
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stockwerk.choices = [(str(e.id), e.bezeichnung) for e in Stockwerke.query.all()]
 
 
 class EditWohnungen(FlaskForm):
-    wohnungen = SelectField('Wohnungen', choices=[], validators=[DataRequired()])
-    bezeichnung = StringField('Bezeichnung', validators=[DataRequired(), Length(max=25)])
+    selnummer = SelectField('Nummer', choices=[], validators=[DataRequired()])
+    nummer = StringField('Neue Nummer', validators=[DataRequired()])
+    stockwerk = SelectField('Stockwerk', choices=[], validators=[DataRequired()])
+    qm = StringField('Quadratmeter', validators=[DataRequired()])
+    zimmer = StringField('Zimmer', validators=[DataRequired()])
     submit = SubmitField('Speichern')
 
+    def validate_nummer(self, nummer):
+        pass
+        # nummer = Wohnungen.query.filter_by(nummer=nummer.data).first()
+        # if nummer:
+        #     raise ValidationError("Diese Wohnung gibt es schon!")
+
     def __init__(self, *args, **kwargs):
-        super(EditWohnungen, self).__init__(*args, **kwargs)
-        self.wohnungen.choices = [(e.id, e.bezeichnung) for e in Wohnungen.query.all()]
+        super().__init__(*args, **kwargs)
+        self.selnummer.choices = [(e.id, e.nummer) for e in Wohnungen.query.all()]
+        self.stockwerk.choices = [(e.id, e.bezeichnung) for e in Stockwerke.query.all()]
 
         
 class DeleteWohnungen(FlaskForm):
-    wohnungen = SelectField('Wohnungen', choices=[], validators=[DataRequired()])
+    nummer = SelectField('Nummer', choices=[], validators=[DataRequired()])
     submit = SubmitField('Löschen')
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.wohnungen.choices = [(str(e.id), e.bezeichnung) for e in Wohnungen.query.all()]
+        self.nummer.choices = [(str(e.id), e.nummer) for e in Wohnungen.query.all()]
 
 
 class AddZaehler(FlaskForm):

@@ -1,13 +1,16 @@
-import sqlalchemy
 from crypt import methods
 from curses import keyname
+from datetime import datetime
 import os
+import json
 from pyexpat.errors import messages
 import secrets
+from select import select
 from wsgiref.util import request_uri
 from PIL import Image
 from sqlalchemy import inspect, text, create_engine
-from sqlalchemy.orm import class_mapper, scoped_session, sessionmaker
+from traitlets import default
+#from sqlalchemy.orm import class_mapper, scoped_session, sessionmaker
 import verwaltungonline.models as models
 from flask import (
     get_flashed_messages,
@@ -249,12 +252,12 @@ def add_kosten():
         kosten = Kosten(
             datum=form.datum.data,
             abrechnungsjahr=form.abrechnungsjahr.data,
-            kostenart_id=form.kostenart.data,
+            kostenarten_id=form.kostenart.data,
             firma=form.firma.data,
             leistung=form.leistung.data,
             betrag=form.betrag.data,
             menge=form.menge.data,
-            einheit_id=form.einheit.data,
+            einheiten_id=form.einheit.data,
             umlageschluessel_id=form.umlageschluessel.data,
         )
         db.session.add(kosten)
@@ -272,70 +275,60 @@ def add_kosten():
 
 
 @app.route("/edit_kosten", methods=["GET", "POST"])
+@login_required
 def edit_kosten():
     form = EditKosten()
-    kosten = Kosten.query.all()
     if request.method == "POST":
-        data = request.get_json()
-        # print(data)
-        # qResult = Kosten.query.filter_by(id=data['id']).first()
-        qResult = Kosten.query.get(data["id"])
-        qResult_dict = qResult.__dict__
-        print(qResult_dict)
-        qResult_list = list(qResult_dict.items())[2][1]
-        print(qResult_list)
-        # print(type(qResult))
-        mapper = inspect(Kosten)
-        data = {}
-        i = 1
-        for column in mapper.attrs:
-            if column.key != "id":
-                data[column.key] = qResult_dict[column.key]
-                i = i + 1
-        print(data)
-        return jsonify(data)
-
-    if form.validate_on_submit():
-        kosten = form.kosten.data
-        kosten = Kosten(
-            datum=form.datum.data,
-            abrechnungsjahr=form.abrechnungsjahr.data,
-            kostenart=form.kostenart.data,
-            # firma=form.firma.data,
-            leistung=form.leistung.data,
-            # betrag=form.betrag.data,
-            # menge=form.menge.data,
-            # einheit=form.einheit.data,
-            # umlageschluessel=form.umlageschluessel.data,
-        )
-        if Kosten.query.filter_by(leistung=leistung).first():
-            flash("Diese Kosten gibt es schon!")
-            return redirect(url_for("kosten"))
-        db.session.commit()
-        flash("Kosten erfolgreich aktualisiert!")
-        return redirect(url_for("kosten"))
-    else:
-        pass  # print('Form-Errors: ', form.errors)
+        if request.content_type == 'application/json':
+            data = request.get_json()
+            if data:
+                print('JSON received: ', data)
+                row = Kosten.query.filter_by(id=data["id"]).first()
+                if row:
+                    row_dict = row.__dict__
+                    del row_dict['_sa_instance_state']
+                    row_dict['Datum'] = row_dict['datum'].strftime('%Y-%m-%d')
+                    row_dict[data['name']] = data['id']
+                    keys_to_rename = []     # da die relevanten Datenbank-Spalten ein _id Suffix im Namen haben, müssen wir diese umbenennen
+                    for key in row_dict.keys():
+                        if key.endswith('_id'):
+                            keys_to_rename.append(key)
+                    for key in keys_to_rename:
+                        new_key = key[:-3]
+                        row_dict[new_key] = row_dict.pop(key)
+                    json_data = json.dumps(row_dict, default=str)
+                    return json_data
+        else:
+            if form.validate_on_submit():
+                check = Kosten.query.filter_by(id=form.selleistung.data).first()
+                if Kosten.query.filter_by(leistung=check.leistung).first() and form.leistung.data != check.leistung:
+                    flash("Diese Leistung gibt es schon!")
+                else:
+                    row = Kosten.query.filter_by(id=form.selleistung.data).first()
+                    if row:
+                        row.datum = form.datum.data
+                        row.abrechnungsjahr = form.abrechnungsjahr.data
+                        row.kostenarten_id = form.kostenarten.data
+                        row.firma = form.firma.data
+                        row.leistung = form.leistung.data
+                        row.betrag = form.betrag.data
+                        row.menge = form.menge.data
+                        row.einheiten_id = form.einheiten.data
+                        row.umlageschluessel_id = form.umlageschluessel.data
+                        db.session.commit()
+                        flash("Kosten erfolgreich aktualisiert!")
+                        return redirect(url_for("kosten"))
+                    else:
+                        flash("Keine Daten gefunden")
+                        return redirect(url_for("kosten"))
+            else:
+                print('Form errors: ', form.errors)
     return render_template(
         "edit_kosten.html",
         form=form,
         legend="Kosten bearbeiten",
         action=url_for("edit_kosten"),
-        kosten=kosten,
     )
-
-
-@app.route("/get_data/<model>", methods=["POST"])
-def get_data(model):
-    data = request.get_json()
-    model = globals()[model]
-    print(data)
-    if data:
-        row = model.query.filter_by(id=data["id"]).first()
-        if row:
-            row_dict = get_full_row_dict(row)
-            return jsonify(row_dict)
-    return jsonify({"error": "Daten nicht gefunden"})
 
 
 @app.route("/delete_kosten", methods=["GET", "POST"])
@@ -638,7 +631,12 @@ def wohnungen():
 def add_wohnung():
     form = AddWohnung()
     if form.validate_on_submit():
-        post = Wohnungen(bezeichnung=form.bezeichnung.data)
+        post = Wohnungen(
+            nummer=form.nummer.data,
+            stockwerk=form.stockwerk.data,
+            qm=form.qm.data,
+            zimmer=form.zimmer.data,
+        )
         db.session.add(post)
         db.session.commit()
         flash("Datensatz wurde angelegt.", "success")
@@ -650,6 +648,76 @@ def add_wohnung():
         legend="Wohnung hinzufügen",
     )
 
+
+@app.route("/edit_wohnungen", methods=["GET", "POST"])
+@login_required
+def edit_wohnungen():
+    form = EditWohnungen()
+    if request.method == "POST":
+        if request.content_type == 'application/json':
+            data = request.get_json()
+            if data:
+                print('JSON received: ', data)
+                row = Wohnungen.query.filter_by(id=data["id"]).first()
+                if row:
+                    row_dict = row.__dict__
+                    del row_dict['_sa_instance_state']
+                    row_dict[data['name']] = data['id']
+                    keys_to_rename = []     # da die relevanten Datenbank-Spalten ein _id Suffix im Namen haben, müssen wir diese umbenennen
+                    for key in row_dict.keys():
+                        if key.endswith('_id'):
+                            keys_to_rename.append(key)
+                    for key in keys_to_rename:
+                        new_key = key[:-3]
+                        row_dict[new_key] = row_dict.pop(key)
+                    json_data = json.dumps(row_dict, default=str)
+                    return json_data
+        else:
+            if form.validate_on_submit():
+                check = Wohnungen.query.filter_by(id=form.selnummer.data).first()
+                if Wohnungen.query.filter_by(nummer=check.nummer).first() and form.nummer.data != check.nummer:
+                    flash("Diese Nummer gibt es schon!")
+                else:
+                    row = Wohnungen.query.filter_by(id=form.selnummer.data).first()
+                    print(row)
+                    if row:
+                        row.nummer = form.nummer.data
+                        row.stockwerk = form.stockwerk.data
+                        row.qm = form.qm.data
+                        row.zimmer = form.zimmer.data
+                        db.session.commit()
+                        flash("Wohnung erfolgreich aktualisiert!")
+                        return redirect(url_for("wohnungen"))
+                    else:
+                        flash("Keine Daten gefunden")
+                        return redirect(url_for("wohnungen"))
+            else:
+                print('Form errors: ', form.errors)
+    return render_template(
+        "edit_wohnungen.html",
+        form=form,
+        legend="Wohnungen bearbeiten",
+        action=url_for("edit_wohnungen"),
+    )
+
+
+@app.route("/delete_wohnungen", methods=["GET", "POST"])
+@login_required
+def delete_wohnungen():
+    form = DeleteWohnungen()
+    if form.validate_on_submit():
+        wohnungen = Wohnungen.query.get(form.nummer.data)
+        db.session.delete(wohnungen)
+        db.session.commit()
+        flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
+        return redirect(url_for("wohnungen"))
+
+    return render_template(
+        "delete_wohnungen.html",
+        form=form,
+        legend="Datensatz löschen",
+        action=url_for("delete_wohnungen"),
+    )
 
 @app.route("/zaehler")
 @login_required
@@ -839,19 +907,4 @@ def delete_post(post_id):
     return redirect(url_for("home"))
 
 
-def get_full_row_dict(row):
-    row_dict = {}
-    for column in row.__table__.columns:
-        print(column)
-        if str(column.type) == "INTEGER" and column.name.endswith("_id"):
-            print(column.name)
-            related_model_name = column.name[:-3]
-            related_model = getattr(models, related_model_name.capitalize())
-            related_row = related_model.query.filter_by(id=getattr(row, column.name)).first()
-            if related_row:
-                print(row)
-                related_column_name = 'bezeichnung'  # TODO: hier automatisch den korrekten spaltennamen zurückgeben. wie in model 
-                row_dict[column.name] = getattr(related_row, related_column_name)
-        else:
-            row_dict[column.name] = getattr(row, column.name)
-    return row_dict
+

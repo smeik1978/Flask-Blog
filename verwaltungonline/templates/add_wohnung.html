@@ -1,31 +1,36 @@
 {% extends "wohnungen.html" %}
-{% block content %}
-<div class="content-section">
-    <form method="POST" action="">
-        {{ form.hidden_tag() }}
-        <fieldset class="form-group">
+{% block stammdaten %}
+<div class="content-section mt-3">
+    <div class="row">
+        <div class="col">
             <legend class="border-bottom mb-4">{{ legend }}</legend>
-            <div class="form-group">
-                {{ form.bezeichnung.label(class="form-control-label") }}
-                {% if form.bezeichnung.errors %}
-                    {{ form.bezeichnung(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.bezeichnung.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
+            <form action="{{ action }}" method="POST">
+                {{ form.hidden_tag() }}
+                <fieldset class="form-group">
+                    <div class="form-group">
+                        {{ form.nummer.label(class="form-control-label") }}
+                        {{ form.nummer(class="form-control") }}
                     </div>
-                {% else %}
-                    {{ form.bezeichnung(class="form-control form-control-lg") }}
-                {% endif %}
-            </div>
-        </fieldset>
-        <div class="form-group">
-            {{ form.submit(class="btn btn-outline-info") }}
-            <a href="{{ url_for('wohnungen') }}" class="btn btn-outline-info" role="button">Abbrechen</a>
+                    <div class="form-group">
+                        {{ form.stockwerk.label(class="form-control-label") }}
+                        {{ form.stockwerk(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.qm.label(class="form-control-label") }}
+                        {{ form.qm(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.zimmer.label(class="form-control-label") }}
+                        {{ form.zimmer(class="form-control") }}
+                    </div>
+                </fieldset>
+                <div class="form-group mt-3">
+                    {{ form.submit(class="btn btn-outline-primary") }}
+                    <a href="{{ url_for('wohnungen') }}" class="btn
+                        btn-outline-primary" role="button">Abbrechen</a>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
-{% endblock content %}
-{% block Menue %}
-
-{% endblock Menue %}
+{% endblock stammdaten %}
