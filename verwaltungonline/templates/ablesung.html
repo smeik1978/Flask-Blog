@@ -4,49 +4,61 @@
 {% endblock %}
 {% block verwaltung %}
 <div class="content-section mt-3">
-    <div class="row">
+    <div class="row border-bottom mb-4">
+        <legend class="border-bottom mb-4">{{ legend }}</legend>
         <div class="col">
-            <legend class="border-bottom mb-4">{{ legend }}</legend>
-            <form action="{{ action }}" method="POST">
-                {{ form.hidden_tag() }}
-                <fieldset class="form-group">
-                    <div class="form-group">
-                        {{ form.weid.label(class="form-label") }}
-                        {{ form.weid(class="form-control", onchange="updateDataFromDB(event)") }}
-                        {{ form.wohnung.label(class="form-control-label") }}
-                        {{ form.wohnung(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.zaehler.label(class="form-control-label") }}
-                        {{ form.zaehler(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.raum.label(class="form-control-label") }}
-                        {{ form.raum(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.zaehlertyp.label(class="form-control-label") }}
-                        {{ form.zaehlertyp(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.wert_vorjahr.label(class="form-control-label") }}
-                        {{ form.wert_vorjahr(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.ablesewert.label(class="form-control-label") }}
-                        {{ form.ablesewert(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.check.label(class="form-control-label") }}
-                        {{ form.check(class="form-control") }}
-                    </div>
-                </fieldset>
-                <div class="form-group mt-3">
-                    {{ form.submit(class="btn btn-outline-primary") }}
-                    <a href="{{ url_for('verwaltung') }}" class="btn
-                        btn-outline-primary" role="button">Abbrechen</a>
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <div class="form-group">
+                    {{ form.weid.label(class="form-label") }}
+                    {{ form.weid(class="form-control", onchange="updateDataFromDB(event)") }}
                 </div>
-            </form>
+                <div class="form-group">
+                    {{ form.datum.label(class="form-label") }}
+                    {{ form.datum(class="form-control", onchange="updateDataFromDB(event)") }}
+                </div>
+            </fieldset>
+        </div>
+        <div class='col mb-3'>
+            <div>
+                {{ form.wohnung.label(class="form-control-label") }}
+                {{ form.wohnung(class="form-control") }}
+            </div>
+            <div class='col'>
+                {{ form.abrechnungsjahr.label(class="form-control-label") }}
+                {{ form.abrechnungsjahr(class="form-control") }}
+            </div>
+        </div>
+    </div>
+    <div class='row mt-3'>
+        <div class='col'>
+            <table class="table table-light table-striped">
+                <thead >
+                <tr>
+                    <th scope="col">Raum</th>
+                    <th scope="col">Zähler</th>
+                    <th scope="col">Zählertyp</th>
+                    <th scope="col">Vorjahreswert</th>
+                    <th scope="col">{{ form.ablesewert.label(class="form-control-label") }}</th>
+                    <th scope="col">{{ form.check.label(class="form-control-label") }}</th>
+                </tr>
+                </thead>
+                    <tbody>
+                        <tr>
+                            <td id='ort'></td>
+                            <td id='zaehler'></td>
+                            <td id='typ'></td>
+                            <td id='vorjahreswert'></td>
+                            <td id='ablesewert'></td>
+                            <td id='check'>{{ form.check(class="form-control form-control-xs") }}</td>
+                        </tr>
+                    </tbody>
+            </table>
+            <div class="form-group mt-3">
+                {{ form.submit(class="btn btn-outline-primary") }}
+                <a href="{{ url_for('verwaltung') }}" class="btn
+                    btn-outline-primary" role="button">Abbrechen</a>
+            </div>
         </div>
     </div>
 </div>

@@ -2,16 +2,16 @@ $(document).ready(function () {
   // Finden des <option>-Elements, das als "selected" markiert ist
   const selectedOption = document.querySelector('select option[selected]');
   const name = selectedOption.parentNode.name;
-  console.log(name)
+  //console.log(name)
 
   // Zugriff auf den Wert des <option>-Elements
   const selectedValue = selectedOption.value;
-  console.log(selectedValue);
+  //console.log(selectedValue);
   const message = {
     id: selectedValue,
     name: name
   };
-  console.log(message);
+  //console.log('message: ', message);
   fetch(window.location.href, {  // die aktuelle URL herausfinden und verwenden
     method: 'POST',
     headers: {
@@ -21,12 +21,14 @@ $(document).ready(function () {
   })
   .then(response => response.json())
     .then(data => {
-      console.log(data);
+      //console.log('data: ', data);
       for (key in data) {
+        //console.log('key :', key)
         field = document.getElementById(key);
+        //console.log('field: ', field);
         if (field) {
-          //console.log(field);
-          //console.log(data[key]);
+          //console.log('field.value: ', field.value);
+          //console.log('data[key]:'. data[key]);
           field.value = data[key];
         }
       }
@@ -35,37 +37,79 @@ $(document).ready(function () {
 
 
 function updateDataFromDB(event) {
-  console.log(event);
-    const name = event.target.id; // Der Name des getriggerten Select-Felds
-    const selectedOption = event.target.options[event.target.selectedIndex]; // Die ausgewählte Option des getriggerten Select-Felds
-    const message = {
-      id: selectedOption.value,
-      name: name
-    };
-    console.log(message);
-    fetch(window.location.href, {  // die aktuelle URL herausfinden und verwenden
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(message) // Das Select-Feld als JSON-Objekt codieren und an den Server senden
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      for (key in data) {
-        field = document.getElementById(key);
-        if (field) {
-          //console.log(field);
-          //console.log(data[key]);
-          field.value = data[key];
+  console.log('event: ', event);
+  const name = event.target.id; // Der Name des getriggerten Select-Felds
+  const selectedOption = event.target.options[event.target.selectedIndex]; // Die ausgewählte Option des getriggerten Select-Felds
+  const message = {
+    id: selectedOption.value,
+    name: name
+  };
+  console.log('message', message);
+  fetch(window.location.href, {  // die aktuelle URL herausfinden und verwenden
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(message) // Das Select-Feld als JSON-Objekt codieren und an den Server senden
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('data: ', data);
+    console.log('window is: ', window.location.href);
+    if (window.location.href == window.location.origin + '/ablesung') {
+      const zaehlerElement = document.getElementById('zaehler');
+      //console.log('zaehlerElement: ', zaehlerElement);
+      //console.log('zaehlerElement: ', zaehlerElement.parentNode.tagName);
+      if (zaehlerElement.parentNode.tagName.toLowerCase() === 'tr') {
+        // Vorhandene Zeilen entfernen
+        const tbodyElement = zaehlerElement.parentNode.parentNode;
+        while (tbodyElement.firstChild) {
+          tbodyElement.removeChild(tbodyElement.firstChild);
+        }
+        // Neue Zeilen erstellen und hinzufügen
+        for (const key in data) {
+          const trElement = document.createElement('tr');
+          const tdRaum = document.createElement('td');
+          const tdZaehler = document.createElement('td');
+          const tdTyp = document.createElement('td');
+          const tdVorjahreswert = document.createElement('td');
+          const tdAblesewert = document.createElement('td');
+          const tdCheck = document.createElement('td');
+          const inputAblesewert = document.createElement('input');
+
+          tdRaum.textContent = 'Raumname'; // ToDo
+          tdZaehler.textContent = data[key];
+          tdTyp.textContent = 'Zählertyp'; // ToDo
+          tdVorjahreswert.textContent = 'Vorjahreswert'; // ToDo
+          inputAblesewert.type = 'text';
+          inputAblesewert.classList.add('form-control', 'form-control-xs');
+          inputAblesewert.name = `ablesewert_${data[key]}`;
+          tdAblesewert.appendChild(inputAblesewert);
+          tdCheck.textContent = 'Check'; // ToDo
+
+          trElement.appendChild(tdRaum);
+          trElement.appendChild(tdZaehler);
+          trElement.appendChild(tdTyp);
+          trElement.appendChild(tdVorjahreswert);
+          trElement.appendChild(tdAblesewert);
+          trElement.appendChild(tdCheck);
+
+          tbodyElement.appendChild(trElement);
         }
       }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
-  }
+    }
+    for (key in data) {
+      field = document.getElementById(key);
+      if (field) {
+        field.value = data[key];
+      }
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+}
+
  
 
 

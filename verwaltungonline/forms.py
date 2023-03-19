@@ -113,13 +113,15 @@ class PostForm(FlaskForm):
 
 
 class frmAblesung(FlaskForm):
-    weid = SelectField("WEID", choices=[], validators=[DataRequired()])
+    weid = SelectField("WEID", choices=[], validators=[DataRequired()], default=1)
+    datum = DateField("Datum", validators=[DataRequired()])
+    abrechnungsjahr = StringField("Abrechnungsjahr", validators=[DataRequired(), Length(max=4)])
     wohnung = SelectField("Wohnung", choices=[], validators=[DataRequired()])
-    zaehler =SelectField("Zählernummer", choices=[], validators=[DataRequired()])
+    zaehler = SelectField("Zählernummer", choices=[], validators=[DataRequired()])
     raum = SelectField("Raum", choices=[], validators=[DataRequired()])
     zaehlertyp = SelectField("Zählertyp", choices=[], validators=[DataRequired()])
     wert_vorjahr = SelectField("Wert Vorjahr", choices=[], validators=[DataRequired()])
-    ablesewert = FloatField("Betrag", validators=[DataRequired()])
+    ablesewert = FloatField("Ablesewert", validators=[DataRequired()])
     check = StringField("Check")
     submit = SubmitField("Speichern")
     

@@ -95,6 +95,7 @@ def home():
 @login_required
 def ablesung():
     form = frmAblesung()
+    ablesung = Ablesung.query.all()
     if request.method == "POST":
         if request.content_type == 'application/json':
             data = request.get_json()
@@ -106,9 +107,11 @@ def ablesung():
                     print(f"row_dict: {row_dict}")
                     wohnung_zaehler = Zaehler.query.filter_by(wohnung_id=row_dict["wohnung_id"]).all()
                     print(f"wohnung_zaehler: {wohnung_zaehler}")
-                    wohnung_zaehler_nummer = []
+                    wohnung_zaehler_nummer = {}
+                    i=1
                     for item in wohnung_zaehler:
-                        wohnung_zaehler_nummer.append(item.nummer)
+                        wohnung_zaehler_nummer[i]=item.nummer
+                        i +=1
                     print(f"wohnung_zaehler_nummer: {wohnung_zaehler_nummer}")
                     del row_dict['_sa_instance_state']
                     row_dict['Mietbeginn'] = row_dict['mietbeginn'].strftime('%Y-%m-%d')
@@ -123,8 +126,8 @@ def ablesung():
                     for key in row_dict.keys():
                         pass
                         #print(f"Key: {key}")
-                    json_data = json.dumps(row_dict, default=str)
-                    #json_data = json.dumps(wohnung_zaehler_nummer, default=str)
+                    #json_data = json.dumps(row_dict, default=str)
+                    json_data = json.dumps(wohnung_zaehler_nummer, default=str)
                     print(f"JSON to send: {json_data}")
                     return json_data
     return render_template(
@@ -133,6 +136,7 @@ def ablesung():
         form=form,
         legend = "Ablesung",
         action=url_for("ablesung"),
+        ablesung=ablesung
     )
 
 
