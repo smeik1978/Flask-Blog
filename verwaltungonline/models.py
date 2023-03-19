@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from attr import NOTHING
 from verwaltungonline import db, app, login_manager
 from flask_login import UserMixin
 
@@ -38,12 +40,38 @@ class Post(db.Model):
 
 class Ablesung(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    weid_id = db.Column(db.Integer, db.ForeignKey("vermietung.id", name='fk_ablesung_vermietung_weid'), index=True)
     datum = db.Column(db.Date, nullable=False)
     abrechnungsjahr = db.Column(db.String(4), nullable=False)
-    zaehler_id = db.Column(db.Integer, db.ForeignKey('zaehler.id', name='fk_ablesung_zaehler_id'), nullable=False)
-    Wert = db.Column(db.Float(precision=2), nullable=False)
-    zaehler = db.relationship('Zaehler', backref='ablesung')
+    wohnung_id = db.Column(db.Integer, db.ForeignKey("wohnungen.id", name='fk_ablesung_wohnungen_id'), index=True)
+    ort_id = db.Column(db.Integer, db.ForeignKey('zaehler.ort', name='fk_ablesung_zaehler_ort'), nullable=False, index=True)
+    zaehler_id = db.Column(db.Integer, db.ForeignKey('zaehler.id', name='fk_ablesung_zaehler_id'), nullable=False, index=True)
+    zaehlertyp_id = db.Column(db.Integer, db.ForeignKey('zaehlertypen.id', name='fk_ablesung_zaehlertypen_id'), nullable=False, index=True)
+    ablesewert = db.Column(db.Float(precision=2), nullable=False)
+    weid = db.relationship('Vermietung', backref='ablesung')
+    wohnung = db.relationship('Wohnungen', backref='ablesung')
+    zaehler_ort = db.relationship('Zaehler', foreign_keys=[ort_id], backref='ablesung_ort')
+    zaehler_id_fk = db.relationship('Zaehler', foreign_keys=[zaehler_id], backref='ablesung_id_fk')
+    zaehlertyp = db.relationship('Zaehlertypen', backref='ablesung')
+
+
     
+    
+    # id = db.Column(db.Integer, primary_key=True)
+    # weid_id = db.Column(db.Integer, db.ForeignKey("vermietung.id", name='fk_ablesung_vermietung_weid'))
+    # datum = db.Column(db.Date, nullable=False)
+    # abrechnungsjahr = db.Column(db.String(4), nullable=False)
+    # wohnung_id = db.Column(db.Integer, db.ForeignKey("vermietung.wohnung_id", name='fk_ablesung_vermietung_wohnung'))
+    # ort_id = db.Column(db.Integer, db.ForeignKey('zaehler.ort', name='fk_ablesung_zaehler_ort'), nullable=False)
+    # zaehler_id = db.Column(db.Integer, db.ForeignKey('zaehler.id', name='fk_ablesung_zaehler_id'), nullable=False)
+    # zaehlertyp_id = db.Column(db.Integer, db.ForeignKey('zaehlertypen.id', name='fk_ablesung_zaehlertypen_id'), nullable=False)
+    # ablesewert = db.Column(db.Float(precision=2), nullable=False)
+    # weid = db.relationship('Vermietung', backref='ablesung')
+    # wohnung = db.relationship('Vermietung', backref='ablesung')
+    # ort = db.relationship('Zaehler', backref='ablesung')
+    # zaehler = db.relationship('Zaehler', backref='ablesung')
+    # zaehlertyp = db.relationship('Zaehlertypen', backref='ablesung')
+
 
 class Einheiten(db.Model):
     id = db.Column(db.Integer, primary_key=True)

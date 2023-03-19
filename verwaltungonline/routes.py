@@ -95,24 +95,45 @@ def home():
 @login_required
 def ablesung():
     form = frmAblesung()
-    Session = sessionmaker(bind=db.engine)
-    session = Session()
-    ablesung = session.query(Vermietung.id, Vermietung.weid, Vermietung.wohnung_id,
-                        Vermietung.vorname, Vermietung.nachname,
-                        Zaehler.nummer, Zaehler.ort, Zaehler.typ_id)\
-                 .join(Zaehler, Vermietung.wohnung_id == Zaehler.wohnung_id)\
-                 .all()
-    print(ablesung)
-    columns = Ablesung.__table__.columns.keys()
-    column_names = [column[:-3].capitalize() if column.endswith('_id') else column.capitalize() for column in columns if column != 'id']
+    if request.method == "POST":
+        if request.content_type == 'application/json':
+            data = request.get_json()
+            if data:
+                print('JSON received: ', data)
+                row = Vermietung.query.filter_by(id=data["id"]).first()
+                if row:
+                    row_dict = row.__dict__
+                    print(f"row_dict: {row_dict}")
+                    wohnung_zaehler = Zaehler.query.filter_by(wohnung_id=row_dict["wohnung_id"]).all()
+                    print(f"wohnung_zaehler: {wohnung_zaehler}")
+                    wohnung_zaehler_nummer = []
+                    for item in wohnung_zaehler:
+                        wohnung_zaehler_nummer.append(item.nummer)
+                    print(f"wohnung_zaehler_nummer: {wohnung_zaehler_nummer}")
+                    del row_dict['_sa_instance_state']
+                    row_dict['Mietbeginn'] = row_dict['mietbeginn'].strftime('%Y-%m-%d')
+                    row_dict[data['name']] = data['id']
+                    keys_to_rename = []     # da die relevanten Datenbank-Spalten ein _id Suffix im Namen haben, müssen wir diese umbenennen
+                    for key in row_dict.keys():
+                        if key.endswith('_id'):
+                            keys_to_rename.append(key)
+                    for key in keys_to_rename:
+                        new_key = key[:-3]
+                        row_dict[new_key] = row_dict.pop(key)
+                    for key in row_dict.keys():
+                        pass
+                        #print(f"Key: {key}")
+                    json_data = json.dumps(row_dict, default=str)
+                    #json_data = json.dumps(wohnung_zaehler_nummer, default=str)
+                    print(f"JSON to send: {json_data}")
+                    return json_data
     return render_template(
         "ablesung.html",
         title="Ablesung",
         form=form,
         legend = "Ablesung",
         action=url_for("ablesung"),
-        ablesung=ablesung,
-        column_names=column_names)
+    )
 
 
 @app.route("/about")
@@ -193,7 +214,7 @@ def delete_einheiten():
 def gemeinschaft():
     gemeinschaft = Gemeinschaft.query.all()
     return render_template(
-        "gemeinschaft.html", title="Gemeinschaftslächen", gemeinschaft=gemeinschaft
+        "gemeinschaft.html", title="Gemeinschaftsflächen", gemeinschaft=gemeinschaft
     )
 
 

@@ -115,8 +115,6 @@ class PostForm(FlaskForm):
 class frmAblesung(FlaskForm):
     weid = SelectField("WEID", choices=[], validators=[DataRequired()])
     wohnung = SelectField("Wohnung", choices=[], validators=[DataRequired()])
-    vorname = SelectField("Vorname", choices=[], validators=[DataRequired()])
-    nachname = SelectField("Nachname", choices=[], validators=[DataRequired()])
     zaehler =SelectField("Zählernummer", choices=[], validators=[DataRequired()])
     raum = SelectField("Raum", choices=[], validators=[DataRequired()])
     zaehlertyp = SelectField("Zählertyp", choices=[], validators=[DataRequired()])
@@ -129,8 +127,6 @@ class frmAblesung(FlaskForm):
         super().__init__(*args, **kwargs)
         self.weid.choices = [(e.id, e.weid) for e in Vermietung.query.all()]
         self.wohnung.choices = [(e.id, e.wohnung) for e in Vermietung.query.all()]
-        self.vorname.choices = [(e.id, e.vorname) for e in Vermietung.query.all()]
-        self.nachname.choices = [(e.id, e.nachname) for e in Vermietung.query.all()]
         self.zaehler.choices = [(e.id, e.nummer) for e in Zaehler.query.all()]
         self.raum.choices = [(e.id, e.ort) for e in Zaehler.query.all()]
         self.zaehlertyp.choices = [(e.id, e.typ) for e in Zaehler.query.all()]
