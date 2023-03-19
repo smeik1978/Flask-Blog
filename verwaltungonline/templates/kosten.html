@@ -4,23 +4,25 @@
 <div class="content-section mt-3">
     <h2>Übersicht {{ title }}</h2>
     <table class="table table-light table-striped">
-        <thead >
+         <thead >
         <tr>
-            <th scope="col">Bezeichnung</th>
+            {% for column in column_names %}
+            <th scope="col"> {{ column }} </th>
+            {% endfor %}
         </tr>
         </thead>
-        {% for data in kosten %}
+         {% for data in kosten %}
             <tbody>
                 <tr>
                     <td>{{ data.datum }}</td>
                     <td>{{ data.abrechnungsjahr }}</td>
-                    <td>{{ data.kostenart }}</td>
+                    <td>{{ data.kostenart.bezeichnung }}</td>
                     <td>{{ data.firma }}</td>
                     <td>{{ data.leistung }}</td>
                     <td>{{ data.betrag }}</td>
                     <td>{{ data.menge }}</td>
-                    <td>{{ data.einheit }}</td>
-                    <td>{{ data.umlageschluessel }}</td>
+                    <td>{{ data.einheit.bezeichnung }}</td>
+                    <td>{{ data.umlageschluessel.bezeichnung }}</td>
                 </tr>
             </tbody>
         {% endfor %}

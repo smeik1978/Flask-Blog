@@ -3,9 +3,16 @@ FROM alpine:latest
 
 WORKDIR /usr/src/app
 COPY requirements.txt ./
-RUN apk add python3
-RUN apk add py3-pip
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apk add --no-cache \
+      python3-dev \
+      py3-pip \
+      libffi-dev \
+      openssl-dev \
+      gcc \
+      libc-dev \
+      make \
+      && pip install --no-cache-dir -r requirements.txt
+
 
 COPY app.py ./
 COPY wsgi.py ./

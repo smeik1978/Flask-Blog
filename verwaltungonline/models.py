@@ -36,6 +36,15 @@ class Post(db.Model):
         return f"Post('{self.title}', '{self.date_posted}')"
 
 
+class Ablesung(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    datum = db.Column(db.Date, nullable=False)
+    abrechnungsjahr = db.Column(db.String(4), nullable=False)
+    zaehler_id = db.Column(db.Integer, db.ForeignKey('zaehler.id', name='fk_ablesung_zaehler_id'), nullable=False)
+    Wert = db.Column(db.Float(precision=2), nullable=False)
+    zaehler = db.relationship('Zaehler', backref='ablesung')
+    
+
 class Einheiten(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bezeichnung = db.Column(db.String(25), unique=True, nullable=False)
@@ -64,16 +73,16 @@ class Kosten(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     datum = db.Column(db.Date, nullable=False)
     abrechnungsjahr = db.Column(db.String(4), nullable=False)
-    kostenarten_id = db.Column(db.ForeignKey('kostenarten.id', name='fk_kosten_kostenart_id'))
+    kostenarten_id = db.Column(db.ForeignKey('kostenarten.id', name='fk_kosten_kostenart_id'), nullable=False)
     firma = db.Column(db.String(30), nullable=False)
     leistung = db.Column(db.String(30), nullable=False)
     betrag = db.Column(db.Float(precision=2), nullable=False)
     menge = db.Column(db.Integer, nullable=False)
-    einheiten_id = db.Column(db.ForeignKey('einheiten.id', name='fk_kosten_einheit_id'))
-    umlageschluessel_id = db.Column(db.ForeignKey('umlageschluessel.id', name='fk_kosten_umlageschluessel_id'))
-    kostenart_object = db.relationship('Kostenarten', backref='kosten', foreign_keys=[kostenarten_id])
-    einheit_object = db.relationship('Einheiten', backref='kosten', foreign_keys=[einheiten_id])
-    umlageschluessel_object = db.relationship('Umlageschluessel', backref='kosten', foreign_keys=[umlageschluessel_id])
+    einheiten_id = db.Column(db.ForeignKey('einheiten.id', name='fk_kosten_einheit_id'), nullable=False)
+    umlageschluessel_id = db.Column(db.ForeignKey('umlageschluessel.id', name='fk_kosten_umlageschluessel_id'), nullable=False)
+    kostenart = db.relationship('Kostenarten', backref='kosten')
+    einheit = db.relationship('Einheiten', backref='kosten')
+    umlageschluessel = db.relationship('Umlageschluessel', backref='kosten')
 
     def __repr__(self):
         return super().__repr__()
@@ -84,7 +93,7 @@ class Stockwerke(db.Model):
     bezeichnung = db.Column(db.String(25), unique=True, nullable=False)
 
     def __repr__(self) -> str:
-        return super().__repr__()
+        return f"Stockwerke {self.bezeichnung}"
 
 
 class Umlageschluessel(db.Model):
@@ -103,9 +112,7 @@ class Umlageschluessel(db.Model):
 class Vermietung(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     weid = db.Column(db.String(5), unique=True, nullable=False)
-    wohnung = db.Column(db.String(4), nullable=False)
-    # wohnung = db.Column(db.Integer, db.ForeignKey('wohnungen.nummer'),
-    # nullable=False)
+    wohnung_id = db.Column(db.Integer, db.ForeignKey('wohnungen.id', name='fk_vermietung_wohnungen_id'), nullable=False)
     vorname = db.Column(db.String(20), nullable=False)
     nachname = db.Column(db.String(20), nullable=False)
     strasse = db.Column(db.String(30), nullable=False)
@@ -115,6 +122,7 @@ class Vermietung(db.Model):
     mietbeginn = db.Column(db.Date, nullable=False)
     mietende = db.Column(db.Date, nullable=True)
     personen = db.Column(db.String(2), nullable=False)
+    wohnung = db.relationship('Wohnungen', backref='vermietung')
 
     def __repr__(self) -> str:
         return super().__repr__()
@@ -123,10 +131,10 @@ class Vermietung(db.Model):
 class Wohnungen(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nummer = db.Column(db.String(4), unique=True, nullable=False)
-    #stockwerk = db.Column(db.String(25), unique=False, nullable=False)
-    stockwerk = db.Column(db.Integer, db.ForeignKey('stockwerke.bezeichnung'), nullable=False)
+    stockwerk_id = db.Column(db.Integer, db.ForeignKey('stockwerke.id', name='fk_wohnungen_stockwerke_id'), nullable=False)
     qm = db.Column(db.String(10), nullable=False)
     zimmer = db.Column(db.String(2), nullable=False)
+    stockwerk = db.relationship("Stockwerke", backref='wohnungen')
 
     def __repr__(self) -> str:
         return super().__repr__()
@@ -135,15 +143,12 @@ class Wohnungen(db.Model):
 class Zaehler(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nummer = db.Column(db.String(50), nullable=False)
-    typ = db.Column(db.String(25), nullable=False)
-    # typ = db.Column(db.Integer, db.ForeignKey('zaehlertypen.bezeichnung'),
-    # nullable=False)
-    gemeinschaft = db.Column(db.Boolean(), nullable=False)
-    wohnung = db.Column(db.String(4),
-                        nullable=False)
-    # wohnung = db.Column(db.Integer, db.ForeignKey('wohnungen.nummer'),
-    # nullable=False)
+    typ_id = db.Column(db.Integer, db.ForeignKey('zaehlertypen.id', name='fk_zaehler_zaehlertypen_id'), nullable=False)
+    gemeinschaft = db.Column(db.String(4), nullable=False)
+    wohnung_id = db.Column(db.Integer, db.ForeignKey('wohnungen.id', name='fk_zaehler_wohnungen_id'), nullable=False)
     ort = db.Column(db.String(30), nullable=False)
+    typ = db.relationship("Zaehlertypen", backref='zaehler')
+    wohnung = db.relationship("Wohnungen", backref='zaehler')
 
     def __repr__(self) -> str:
         return super().__repr__()

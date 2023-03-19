@@ -2,9 +2,9 @@
 {% block content %}
 <nav class="navbar bg-light">
   <form class="container-fluid justify-content-start">
-    <a class="btn btn-outline-primary me-2" role="button" href="{{ url_for('ablesung') }}">Ablesung</a>
     <a class="btn btn-outline-primary me-2" role="button" href="{{ url_for('kosten') }}">Kosten</a>
     <a class="btn btn-outline-primary me-2" role="button" href="{{ url_for('vermietung') }}">Vermietung</a>
+    <a class="btn btn-outline-primary me-2" role="button" href="{{ url_for('ablesung') }}">Ablesung</a>
     <!-- <a class="btn btn-outline-primary me-2" role="button" href="{{ url_for('stockwerke') }}">Stockwerke</a>
     <a class="btn btn-outline-primary me-2" role="button" href="{{ url_for('umlageschluessel') }}">Umlageschlüssel</a>
     <a class="btn btn-outline-primary me-2" role="button" href="{{ url_for('wohnungen') }}">Wohnungen</a>
@@ -30,6 +30,9 @@
   </p>
 </div>
 {% endblock MenueLeft %}
+
+{% block MenueRight %}
+{% endblock MenueRight %}
 
 {% block script %}
 {% endblock script %}

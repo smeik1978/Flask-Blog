@@ -1,4 +1,41 @@
+$(document).ready(function () {
+  // Finden des <option>-Elements, das als "selected" markiert ist
+  const selectedOption = document.querySelector('select option[selected]');
+  const name = selectedOption.parentNode.name;
+  console.log(name)
+
+  // Zugriff auf den Wert des <option>-Elements
+  const selectedValue = selectedOption.value;
+  console.log(selectedValue);
+  const message = {
+    id: selectedValue,
+    name: name
+  };
+  console.log(message);
+  fetch(window.location.href, {  // die aktuelle URL herausfinden und verwenden
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(message) // Das Select-Feld als JSON-Objekt codieren und an den Server senden
+  })
+  .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      for (key in data) {
+        field = document.getElementById(key);
+        if (field) {
+          //console.log(field);
+          //console.log(data[key]);
+          field.value = data[key];
+        }
+      }
+    })
+})
+
+
 function updateDataFromDB(event) {
+  console.log(event);
     const name = event.target.id; // Der Name des getriggerten Select-Felds
     const selectedOption = event.target.options[event.target.selectedIndex]; // Die ausgewählte Option des getriggerten Select-Felds
     const message = {

@@ -1,0 +1,38 @@
+{% extends "zaehlertypen.html" %}
+{% block stammdaten %}
+<div class="content-section mt-3 col-md-6">
+    <div class="row">
+        <div class="col">
+            <legend class="border-bottom mb-4">{{ legend }}</legend>
+            <form action="{{ action }}" method="POST">
+                {{ form.hidden_tag() }}
+                <fieldset class="form-group">
+                    <div class="form-group">
+                        {{ form.zaehlertypen.label(class="form-label") }}
+                        {{ form.zaehlertypen(class="form-select") }}
+                    </div>
+                    <div class="form-group mt-3">
+                        {{ form.bezeichnung.label(class="form-label") }}
+                        {% if form.bezeichnung.errors %}
+                        {{ form.bezeichnung(class="form-control form-control-lg
+                        is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.bezeichnung.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        {{ form.bezeichnung(class="form-control") }}
+                        {% endif %}
+                    </div>
+                </fieldset>
+                <div class="form-group mt-3">
+                    {{ form.submit(class="btn btn-outline-primary") }}
+                    <a href="{{ url_for('zaehlertypen') }}" class="btn
+                        btn-outline-primary" role="button">Abbrechen</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock stammdaten %}

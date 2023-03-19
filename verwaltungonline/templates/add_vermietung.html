@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "vermietung.html" %}
 {% block content %}
 <div class="content-section">
     <form method="POST" action="">
@@ -7,146 +7,47 @@
             <legend class="border-bottom mb-4">{{ legend }}</legend>
             <div class="form-group">
                 {{ form.weid.label(class="form-control-label") }}
-                {% if form.weid.errors %}
-                    {{ form.weid(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.weid.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.weid(class="form-control form-control-lg") }}
-                {% endif %}
+                {{ form.weid(class="form-control form-control-lg") }}
             </div>
             <div class="form-group">
                 {{ form.wohnung.label(class="form-control-label") }}
-                {% if form.wohnung.errors %}
-                    {{ form.wohnung(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.wohnung.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.wohnung(class="form-control form-control-lg") }}
-                {% endif %}
+                {{ form.wohnung(class="form-control form-control-lg") }}
             </div>
             <div class="form-group">
                 {{ form.vorname.label(class="form-control-label") }}
-                {% if form.vorname.errors %}
-                    {{ form.vorname(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.vorname.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.vorname(class="form-control form-control-lg") }}
-                {% endif %}
+                {{ form.vorname(class="form-control form-control-lg") }}
             </div>
             <div class="form-group">
                 {{ form.nachname.label(class="form-control-label") }}
-                {% if form.nachname.errors %}
-                    {{ form.nachname(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.nachname.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.nachname(class="form-control form-control-lg") }}
-                {% endif %}
+                {{ form.nachname(class="form-control form-control-lg") }}
             </div>
             <div class="form-group">
                 {{ form.strasse.label(class="form-control-label") }}
-                {% if form.strasse.errors %}
-                    {{ form.strasse(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.strasse.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.strasse(class="form-control form-control-lg") }}
-                {% endif %}
+                {{ form.strasse(class="form-control form-control-lg") }}
             </div>
             <div class="form-group">
                 {{ form.hausnummer.label(class="form-control-label") }}
-                {% if form.hausnummer.errors %}
-                    {{ form.hausnummer(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.hausnummer.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.hausnummer(class="form-control form-control-lg") }}
-                {% endif %}
+                {{ form.hausnummer(class="form-control form-control-lg") }}
             </div>
             <div class="form-group">
                 {{ form.plz.label(class="form-control-label") }}
-                {% if form.plz.errors %}
-                    {{ form.plz(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.plz.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.plz(class="form-control form-control-lg") }}
-                {% endif %}
+                {{ form.plz(class="form-control form-control-lg") }}
             </div>
             <div class="form-group">
                 {{ form.ort.label(class="form-control-label") }}
-                {% if form.ort.errors %}
-                    {{ form.ort(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.ort.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.ort(class="form-control form-control-lg") }}
-                {% endif %}
+                {{ form.ort(class="form-control form-control-lg") }}
             </div>
             <div class="form-group">
                 {{ form.mietbeginn.label(class="form-control-label") }}
-                {% if form.mietbeginn.errors %}
-                    {{ form.mietbeginn(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.mietbeginn.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.mietbeginn(class="form-control form-control-lg") }}
-                {% endif %}
+                {{ form.mietbeginn(class="form-control form-control-lg") }}
             </div>
             <div class="form-group">
                 {{ form.mietende.label(class="form-control-label") }}
-                {% if form.mietende.errors %}
-                    {{ form.mietende(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.mietende.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.mietende(class="form-control form-control-lg") }}
-                {% endif %}
+                {{ form.mietende(class="form-control form-control-lg") }}
             </div>
             <div class="form-group">
                 {{ form.personen.label(class="form-control-label") }}
-                {% if form.personen.errors %}
-                    {{ form.personen(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.personen.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.personen(class="form-control form-control-lg") }}
-                {% endif %}
+                {{ form.personen(class="form-control form-control-lg") }}
             </div>
         </fieldset>
         <div class="form-group">
@@ -155,6 +56,3 @@
     </form>
 </div>
 {% endblock content %}
-{% block Menue %}
-
-{% endblock Menue %}

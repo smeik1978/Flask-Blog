@@ -1,0 +1,76 @@
+{% extends "vermietung.html" %}
+{% block script_head %}
+<script src="{{ url_for('static', filename='load_data_from_db.js') }}"></script>
+{% endblock %}
+{% block verwaltung %}
+<div class="content-section mt-3">
+    <div class="row">
+        <div class="col">
+            <legend class="border-bottom mb-4">{{ legend }}</legend>
+            <form action="{{ action }}" method="POST">
+                {{ form.hidden_tag() }}
+                <fieldset class="form-group">
+                    <div class="p-3 text-bg-danger">
+                        <b>Achtung! Der gewählte Datensatz wird endgültig gelöscht!</br>
+                        Es erfolgt <b>keine</b> weitere Sicherheitsabfrage!</b>
+                    </div>
+                    <div class="form-group">
+                        {{ form.weid.label(class="form-label") }}
+                        {{ form.weid(class="form-control", onchange="updateDataFromDB(event)") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.wohnung.label(class="form-control-label") }}
+                        {{ form.wohnung(class="form-control form-control-lg", disabled="disabled") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.vorname.label(class="form-control-label") }}
+                        {{ form.vorname(class="form-control form-control-lg", disabled="disabled") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.nachname.label(class="form-control-label") }}
+                        {{ form.nachname(class="form-control form-control-lg", disabled="disabled") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.strasse.label(class="form-control-label") }}
+                        {{ form.strasse(class="form-control form-control-lg", disabled="disabled") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.hausnummer.label(class="form-control-label") }}
+                        {{ form.hausnummer(class="form-control form-control-lg", disabled="disabled") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.plz.label(class="form-control-label") }}
+                        {{ form.plz(class="form-control form-control-lg", disabled="disabled") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.ort.label(class="form-control-label") }}
+                        {{ form.ort(class="form-control form-control-lg", disabled="disabled") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.mietbeginn.label(class="form-control-label") }}
+                        {{ form.mietbeginn(class="form-control form-control-lg", disabled="disabled") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.mietende.label(class="form-control-label") }}
+                        {{ form.mietende(class="form-control form-control-lg", disabled="disabled") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.personen.label(class="form-control-label") }}
+                        {{ form.personen(class="form-control form-control-lg", disabled="disabled") }}
+                    </div>
+                </fieldset>
+                <div class="form-group mt-3">
+                    {{ form.submit(class="btn btn-outline-danger") }}
+                    <a href="{{ url_for('vermietung') }}" class="btn
+                        btn-outline-primary" role="button">Abbrechen</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock verwaltung %}
+
+{% block script_%}
+<!-- <script src="{{ url_for('static', filename='load_data_from_db.js') }}"></script> -->
+{% endblock %}

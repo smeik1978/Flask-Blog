@@ -1,29 +1,21 @@
-{% extends "layout.html" %}
-{% block content %}
+{% extends "verwaltung.html" %}
+{% block verwaltung %}
   <div class="container mr-auto">
     <div class="content-section mr-auto">
       <h2>Übersicht {{ title }}</h2>
-      <table class="table table-sm">
+      <table class="table table-light table-striped">
           <thead >
           <tr class="table-hover">
-              <th scope="col">WEID</th>
-              <th>Wohnung</th>
-              <th scope="col">Vorname</th>
-              <th scope="col">Nachname</th>
-              <th scope="col">Straße</th>
-              <th scope="col">Hausnummer</th>
-              <th scope="col">Postleitzahl</th>
-              <th scope="col">Ort</th>
-              <th scope="col">Mietbeginn</th>
-              <th scope="col">Mietende</th>
-              <th scope="col">Personen</th>
+            {% for column in column_names %}
+            <th scope="col"> {{ column }} </th>
+            {% endfor %}
           </tr>
           </thead>
-          {% for data in bezeichnungen %}
+          {% for data in vermietung %}
               <tbody>
                   <tr>
                       <td>{{ data.weid }}</td>
-                      <td>{{ data.wohnung }}</td>
+                      <td>{{ data.wohnung.nummer }}</td>
                       <td>{{ data.vorname }}</td>
                       <td>{{ data.nachname }}</td>
                       <td>{{ data.strasse }}</td>
@@ -39,14 +31,17 @@
       </table>
     </div>
   </div>
-{% endblock content %}
-{% block Menue %}
-    <div class="content-section">
-        <p>Aktionen
-        <ul class="list-group">
-            <li class="list-group-item list-group-item-light"><a href="{{ url_for('add_vermietung') }}" class="btn btn-outline-info" role="button">Hinzufügen</a></li>
-            <li class="list-group-item list-group-item-light"><a href="{{ url_for('add_vermietung') }}" class="btn btn-outline-info" role="button">Bearbeiten</a></li>
-        </ul>
-        </p>
+{% endblock verwaltung %}
+
+{% block MenueLeft %}
+<div class="content-section">
+  <h4>Aktionen</h4>
+  <p class='text-muted '>
+    <div class="btn-group-vertical" role="group" aria-label="Basic outlined example">
+        <a class="btn btn-outline-primary me-2" role="button" href="{{ url_for('add_vermietung') }}">Hinzufügen</a>
+        <a class="btn btn-outline-primary me-2" role="button" href="{{ url_for('edit_vermietung') }}">Bearbeiten</a>
+        <a class="btn btn-outline-danger me-2" role="button" href="{{ url_for('delete_vermietung') }}">Löschen</a>
     </div>
-{% endblock Menue %}
+  </p>
+</div>
+{% endblock MenueLeft %}

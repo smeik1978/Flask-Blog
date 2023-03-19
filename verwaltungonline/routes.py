@@ -8,9 +8,10 @@ import secrets
 from select import select
 from wsgiref.util import request_uri
 from PIL import Image
-from sqlalchemy import inspect, text, create_engine
+from attr import validate
+#from sqlalchemy import text, create_engine
 from traitlets import default
-#from sqlalchemy.orm import class_mapper, scoped_session, sessionmaker
+from sqlalchemy.orm import class_mapper, scoped_session, sessionmaker
 import verwaltungonline.models as models
 from flask import (
     get_flashed_messages,
@@ -29,12 +30,12 @@ from verwaltungonline.forms import (
     LoginForm,
     UpdateAccountForm,
     PostForm,
+    frmAblesung,
     AddEinheit,
     AddGemeinschaft,
     AddKostenart,
     AddStockwerk,
     AddUmlageschluessel,
-    AddVermietung,
     AddWohnung,
     AddZaehler,
     AddZaehlertyp,
@@ -57,10 +58,14 @@ from verwaltungonline.forms import (
     AddKosten,
     EditKosten,
     DeleteKosten,
+    AddVermietung,
+    EditVermietung,
+    DeleteVermietung,
 )
 from verwaltungonline.models import (
     User,
     Post,
+    Ablesung,
     Einheiten,
     Gemeinschaft,
     Kosten,
@@ -86,13 +91,28 @@ def home():
     return render_template("home.html", posts=posts)
 
 
-@app.route("/ablesung")
+@app.route("/ablesung", methods=["GET", "POST"])
 @login_required
 def ablesung():
-    bezeichnungen = Einheiten.query.all()
+    form = frmAblesung()
+    Session = sessionmaker(bind=db.engine)
+    session = Session()
+    ablesung = session.query(Vermietung.id, Vermietung.weid, Vermietung.wohnung_id,
+                        Vermietung.vorname, Vermietung.nachname,
+                        Zaehler.nummer, Zaehler.ort, Zaehler.typ_id)\
+                 .join(Zaehler, Vermietung.wohnung_id == Zaehler.wohnung_id)\
+                 .all()
+    print(ablesung)
+    columns = Ablesung.__table__.columns.keys()
+    column_names = [column[:-3].capitalize() if column.endswith('_id') else column.capitalize() for column in columns if column != 'id']
     return render_template(
-        "ablesung.html", title="Ablesung", bezeichnungen=bezeichnungen
-    )
+        "ablesung.html",
+        title="Ablesung",
+        form=form,
+        legend = "Ablesung",
+        action=url_for("ablesung"),
+        ablesung=ablesung,
+        column_names=column_names)
 
 
 @app.route("/about")
@@ -240,8 +260,11 @@ def delete_gemeinschaft():
 @app.route("/kosten")
 @login_required
 def kosten():
-    kosten = Kosten.query.all()
-    return render_template("kosten.html", title="Kosten", kosten=kosten)
+    #kosten = Kosten.query.all()
+    kosten = Kosten.query.options(db.joinedload(Kosten.kostenart), db.joinedload(Kosten.einheit), db.joinedload(Kosten.umlageschluessel)).all()
+    columns = Kosten.__table__.columns.keys()
+    column_names = [column[:-3].capitalize() if column.endswith('_id') else column.capitalize() for column in columns if column != 'id']
+    return render_template("kosten.html", title="Kosten", kosten=kosten, column_names=column_names)
 
 
 @app.route("/add_kosten", methods=["GET", "POST"])
@@ -336,7 +359,7 @@ def edit_kosten():
 def delete_kosten():
     form = DeleteKosten()
     if form.validate_on_submit():
-        kosten = Kosten.query.get(form.kosten.data)
+        kosten = Kosten.query.get(form.leistung.data)
         db.session.delete(kosten)
         db.session.commit()
         flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
@@ -348,7 +371,6 @@ def delete_kosten():
         legend="Datensatz löschen",
         action=url_for("delete_kosten"),
     )
-
 
 @app.route("/kostenarten")
 @login_required
@@ -368,7 +390,7 @@ def add_kostenarten():
         db.session.add(post)
         db.session.commit()
         flash("Datensatz wurde angelegt.", "success")
-        return redirect(url_for("stammdaten"))
+        return redirect(url_for("kostenarten"))
     return render_template(
         "add_kostenarten.html",
         title="Kostenart hinzufügen",
@@ -578,20 +600,22 @@ def delete_umlageschluessel():
 @app.route("/vermietung")
 @login_required
 def vermietung():
-    bezeichnungen = Vermietung.query.all()
+    #bezeichnungen = Vermietung.query.all()
+    vermietung = Vermietung.query.options(db.joinedload(Vermietung.wohnung)).all()
+    columns = Vermietung.__table__.columns.keys()
+    column_names = [column[:-3].capitalize() if column.endswith('_id') else column.capitalize() for column in columns if column != 'id']
     return render_template(
-        "vermietung.html", title="Mieter*innen", bezeichnungen=bezeichnungen
-    )
+        "vermietung.html", title="Vermietung", vermietung=vermietung, column_names=column_names)
 
 
-@app.route("/vermietung/add_vermietung", methods=["GET", "POST"])
+@app.route("/add_vermietung", methods=["GET", "POST"])
 @login_required
 def add_vermietung():
     form = AddVermietung()
     if form.validate_on_submit():
         post = Vermietung(
             weid=form.weid.data,
-            wohnung=form.wohnung.data,
+            wohnung_id=form.wohnung.data,
             vorname=form.vorname.data,
             nachname=form.nachname.data,
             strasse=form.strasse.data,
@@ -606,15 +630,119 @@ def add_vermietung():
         db.session.commit()
         flash("Datensatz wurde angelegt.", "success")
         return redirect(url_for("vermietung"))
+    else:
+        print('Form errors: ', form.errors)
     return render_template(
         "add_vermietung.html",
         title="Neue Mieter*in hinzufügen",
         form=form,
-        legend="Neue Mieter*in hinzufügen",
+        legend="Neue Vermietung",
+    )
+
+
+@app.route("/edit_vermietung", methods=["GET", "POST"])
+@login_required
+def edit_vermietung():
+    form = EditVermietung()
+    if request.method == "POST":
+        if request.content_type == 'application/json':
+            data = request.get_json()
+            if data:
+                print('JSON received: ', data)
+                row = Vermietung.query.filter_by(id=data["id"]).first()
+                if row:
+                    row_dict = row.__dict__
+                    del row_dict['_sa_instance_state']
+                    row_dict['Mietbeginn'] = row_dict['mietbeginn'].strftime('%Y-%m-%d')
+                    row_dict[data['name']] = data['id']
+                    keys_to_rename = []     # da die relevanten Datenbank-Spalten ein _id Suffix im Namen haben, müssen wir diese umbenennen
+                    for key in row_dict.keys():
+                        if key.endswith('_id'):
+                            keys_to_rename.append(key)
+                    for key in keys_to_rename:
+                        new_key = key[:-3]
+                        row_dict[new_key] = row_dict.pop(key)
+                    json_data = json.dumps(row_dict, default=str)
+                    return json_data
+        else:
+            if form.validate_on_submit():
+                check = Vermietung.query.filter_by(id=form.selweid.data).first()
+                if Vermietung.query.filter_by(weid=form.weid.data).first() and form.weid.data != check.weid:
+                    flash("Diese Nummer gibt es schon!")
+                else:
+                    row = Vermietung.query.filter_by(id=form.selweid.data).first()
+                    print(f'form.wohnung.data: {form.wohnung.data}')
+                    if row:
+                        row_dict = row.__dict__
+                        for key in row_dict.keys():
+                            print(key)
+                        row.weid = form.weid.data
+                        row.wohnung_id = form.wohnung.data
+                        row.vorname = form.vorname.data
+                        row.nachname = form.nachname.data
+                        row.strasse = form.strasse.data
+                        row.hausnummer = form.hausnummer.data
+                        row.plz = form.plz.data
+                        row.ort = form.ort.data
+                        row.mietbeginn = form.mietbeginn.data
+                        row.mietende=form.mietende.data
+                        row.personen=form.personen.data
+                        db.session.commit()
+                        flash("Datensatz erfolgreich aktualisiert!")
+                        return redirect(url_for("vermietung"))
+                    else:
+                        flash("Keine Daten gefunden")
+                        return redirect(url_for("vermietung"))
+            else:
+                print('Form errors: ', form.errors)
+    return render_template(
+        "edit_vermietung.html",
+        form=form,
+        legend="Vermietung bearbeiten",
+        action=url_for("edit_vermietung"),
+    )
+
+
+@app.route("/delete_vermietung", methods=["GET", "POST"])
+@login_required
+def delete_vermietung():
+    form = DeleteVermietung(request.form, validate_on_submit=False)
+    if request.method == "POST":
+        if request.content_type == 'application/json':
+            data = request.get_json()
+            if data:
+                print('JSON received: ', data)
+                row = Vermietung.query.filter_by(id=data["id"]).first()
+                if row:
+                    row_dict = row.__dict__
+                    del row_dict['_sa_instance_state']
+                    row_dict['Mietbeginn'] = row_dict['mietbeginn'].strftime('%Y-%m-%d')
+                    row_dict[data['name']] = data['id']
+                    keys_to_rename = []     # da die relevanten Datenbank-Spalten ein _id Suffix im Namen haben, müssen wir diese umbenennen
+                    for key in row_dict.keys():
+                        if key.endswith('_id'):
+                            keys_to_rename.append(key)
+                    for key in keys_to_rename:
+                        new_key = key[:-3]
+                        row_dict[new_key] = row_dict.pop(key)
+                    json_data = json.dumps(row_dict, default=str)
+                    return json_data
+        else:
+            weid = Vermietung.query.get(form.weid.data)
+            db.session.delete(weid)
+            db.session.commit()
+            flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
+            return redirect(url_for("vermietung"))
+    return render_template(
+        "delete_vermietung.html",
+        form=form,
+        legend="Datensatz löschen",
+        action=url_for("delete_vermietung"),
     )
 
 
 @app.route("/verwaltung")
+@login_required
 def verwaltung():
     return render_template("verwaltung.html", title="Verwaltung")
 
@@ -622,18 +750,22 @@ def verwaltung():
 @app.route("/wohnungen")
 @login_required
 def wohnungen():
-    wohnungen = Wohnungen.query.all()
+    #wohnungen = Wohnungen.query.all()
+    #wohnungen = Wohnungen.query.join(Stockwerke, Wohnungen.stockwerk==Stockwerke.id).add_columns(Wohnungen.nummer, Stockwerke.bezeichnung as stockwerk, Wohnungen.qm, Wohnungen.zimmer).all()
+    wohnungen = Wohnungen.query.options(db.joinedload(Wohnungen.stockwerk)).all()
+
+    print(wohnungen)
     return render_template("wohnungen.html", title="Wohnungen", wohnungen=wohnungen)
 
 
-@app.route("/wohnungen/add_wohnung", methods=["GET", "POST"])
+@app.route("/add_wohnung", methods=["GET", "POST"])
 @login_required
 def add_wohnung():
     form = AddWohnung()
     if form.validate_on_submit():
         post = Wohnungen(
             nummer=form.nummer.data,
-            stockwerk=form.stockwerk.data,
+            stockwerk_id=form.stockwerk.data,
             qm=form.qm.data,
             zimmer=form.zimmer.data,
         )
@@ -675,14 +807,14 @@ def edit_wohnungen():
         else:
             if form.validate_on_submit():
                 check = Wohnungen.query.filter_by(id=form.selnummer.data).first()
-                if Wohnungen.query.filter_by(nummer=check.nummer).first() and form.nummer.data != check.nummer:
+                if Wohnungen.query.filter_by(nummer=form.nummer.data).first() and form.nummer.data != check.nummer:
                     flash("Diese Nummer gibt es schon!")
                 else:
                     row = Wohnungen.query.filter_by(id=form.selnummer.data).first()
                     print(row)
                     if row:
                         row.nummer = form.nummer.data
-                        row.stockwerk = form.stockwerk.data
+                        row.stockwerk_id = form.stockwerk.data
                         row.qm = form.qm.data
                         row.zimmer = form.zimmer.data
                         db.session.commit()
@@ -722,16 +854,25 @@ def delete_wohnungen():
 @app.route("/zaehler")
 @login_required
 def zaehler():
-    zaehler = Zaehler.query.all()
+    #zaehler = Zaehler.query.all()
+    zaehler = Zaehler.query.options(db.joinedload(Zaehler.typ), db.joinedload(Zaehler.wohnung)).all()
     return render_template("zaehler.html", title="Zähler", zaehler=zaehler)
 
 
-@app.route("/zaehler/add_zaehler", methods=["GET", "POST"])
+@app.route("/add_zaehler", methods=["GET", "POST"])
 @login_required
 def add_zaehler():
     form = AddZaehler()
     if form.validate_on_submit():
-        post = Zaehler(bezeichnung=form.bezeichnung.data)
+        print(f"Typ: {form.typ.data}")
+        print(f"Wohnung: {form.wohnung.data}")
+        post = Zaehler(
+            nummer=form.nummer.data,
+            typ_id=form.typ.data,
+            gemeinschaft=form.gemeinschaft.data,
+            wohnung_id=form.wohnung.data,
+            ort=form.ort.data,
+        )
         db.session.add(post)
         db.session.commit()
         flash("Datensatz wurde angelegt.", "success")
@@ -744,6 +885,78 @@ def add_zaehler():
     )
 
 
+@app.route("/edit_zaehler", methods=["GET", "POST"])
+@login_required
+def edit_zaehler():
+    form = EditZaehler()
+    if request.method == "POST":
+        if request.content_type == 'application/json':
+            print(f"Gemeinschaft: {request.form.get('gemeinschaft')}")
+            data = request.get_json()
+            if data:
+                print('JSON received: ', data)
+                row = Zaehler.query.filter_by(id=data["id"]).first()
+                if row:
+                    row_dict = row.__dict__
+                    del row_dict['_sa_instance_state']
+                    row_dict[data['name']] = data['id']
+                    keys_to_rename = []     # da die relevanten Datenbank-Spalten ein _id Suffix im Namen haben, müssen wir diese umbenennen
+                    for key in row_dict.keys():
+                        if key.endswith('_id'):
+                            keys_to_rename.append(key)
+                    for key in keys_to_rename:
+                        new_key = key[:-3]
+                        row_dict[new_key] = row_dict.pop(key)
+                    json_data = json.dumps(row_dict, default=str)
+                    return json_data
+        else:
+            if form.validate_on_submit():
+                print(f"Gemeinschaft: {request.form.get('gemeinschaft')}")
+                check = Zaehler.query.filter_by(id=form.selnummer.data).first()
+                if Zaehler.query.filter_by(nummer=form.nummer.data).first() and form.nummer.data != check.nummer:
+                    flash("Diese Nummer gibt es schon!")
+                else:
+                    row = Zaehler.query.filter_by(id=form.selnummer.data).first()
+                    print(f"Gemeinschaft: {form.gemeinschaft.data}")
+                    if row:
+                        row.nummer = form.nummer.data
+                        row.typ_id = form.typ.data
+                        row.gemeinschaft = form.gemeinschaft.data
+                        row.wohnung_id = form.wohnung.data
+                        row.ort = form.ort.data
+                        db.session.commit()
+                        flash("Zähler erfolgreich aktualisiert!")
+                        return redirect(url_for("zaehler"))
+                    else:
+                        flash("Keine Daten gefunden")
+                        return redirect(url_for("zaehler"))
+            else:
+                print('Form errors: ', form.errors)
+    return render_template(
+        "edit_zaehler.html",
+        form=form,
+        legend="Zähler bearbeiten",
+        action=url_for("edit_zaehler"),
+    )
+
+@app.route("/delete_zaehler", methods=["GET", "POST"])
+@login_required
+def delete_zaehler():
+    form = DeleteZaehler()
+    if form.validate_on_submit():
+        zaehler = Zaehler.query.get(form.nummer.data)
+        db.session.delete(zaehler)
+        db.session.commit()
+        flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
+        return redirect(url_for("zaehler"))
+
+    return render_template(
+        "delete_zaehler.html",
+        form=form,
+        legend="Datensatz löschen",
+        action=url_for("delete_zaehler"),
+    )
+
 @app.route("/zaehlertypen")
 @login_required
 def zaehlertypen():
@@ -753,9 +966,9 @@ def zaehlertypen():
     )
 
 
-@app.route("/zaehlertypen/add_zaehlertyp", methods=["GET", "POST"])
+@app.route("/add_zaehlertypen", methods=["GET", "POST"])
 @login_required
-def add_zaehlertyp():
+def add_zaehlertypen():
     form = AddZaehlertyp()
     if form.validate_on_submit():
         post = Zaehlertypen(bezeichnung=form.bezeichnung.data)
@@ -770,6 +983,47 @@ def add_zaehlertyp():
         legend="Zählertyp hinzufügen",
     )
 
+
+@app.route("/edit_zaehlertypen", methods=["GET", "POST"])
+def edit_zaehlertypen():
+    form = EditZaehlertypen()
+    zaehlertypen = Zaehlertypen.query.get(form.zaehlertypen.data)
+    if form.validate_on_submit():
+        bezeichnung = form.bezeichnung.data
+        if Zaehlertypen.query.filter_by(bezeichnung=bezeichnung).first():
+            flash("Diesen Zählertyp gibt es schon!")
+            return redirect(url_for("zaehlertypen"))
+        zaehlertypen.bezeichnung = bezeichnung
+        db.session.commit()
+        flash("Zählertyp erfolgreich aktualisiert!")
+        return redirect(url_for("zaehlertypen"))
+    else:
+        print(form.errors)
+    return render_template(
+        "edit_zaehlertypen.html",
+        form=form,
+        legend="zaehlertypen bearbeiten",
+        action=url_for("edit_zaehlertypen"),
+    )
+
+
+@app.route("/delete_zaehlertypen", methods=["GET", "POST"])
+@login_required
+def delete_zaehlertypen():
+    form = DeleteZaehlertypen()
+    if form.validate_on_submit():
+        zaehlertypen = Zaehlertypen.query.get(form.zaehlertypen.data)
+        db.session.delete(zaehlertypen)
+        db.session.commit()
+        flash("Der Datensatz wurde erfolgreich gelöscht.", "success")
+        return redirect(url_for("zaehlertypen"))
+
+    return render_template(
+        "delete_zaehlertypen.html",
+        form=form,
+        legend="Datensatz löschen",
+        action=url_for("delete_zaehlertypen"),
+    )
 
 # Allgemeine Funktionen
 
@@ -788,7 +1042,7 @@ def register():
         )
         db.session.add(user)
         db.session.commit()
-        flash("Your account has been created! You are now able to log in", "success")
+        flash("Dein Konto wurde erstellt! Du kannst dich nun anmelden", "success")
         return redirect(url_for("login"))
     return render_template("register.html", title="Register", form=form)
 
@@ -805,7 +1059,7 @@ def login():
             next_page = request.args.get("next")
             return redirect(next_page) if next_page else redirect(url_for("home"))
         else:
-            flash("Login Unsuccessful. Please check email and password", "danger")
+            flash("Anmeldung fehlgeschlagen. Bitte prüfe Passwort und Email-Adresse", "danger")
     return render_template("login.html", title="Login", form=form)
 
 
@@ -840,7 +1094,7 @@ def account():
         current_user.username = form.username.data
         current_user.email = form.email.data
         db.session.commit()
-        flash("Your account has been updated!", "success")
+        flash("Dein Konto wurde aktualisiert", "success")
         return redirect(url_for("account"))
     elif request.method == "GET":
         form.username.data = current_user.username
@@ -861,7 +1115,7 @@ def new_post():
         )
         db.session.add(post)
         db.session.commit()
-        flash("Your post has been created!", "success")
+        flash("Deine Nachricht wurde erstellt!", "success")
         return redirect(url_for("home"))
     return render_template(
         "create_post.html", title="New Post", form=form, legend="New Post"
@@ -885,7 +1139,7 @@ def update_post(post_id):
         post.title = form.title.data
         post.content = form.content.data
         db.session.commit()
-        flash("Your post has been updated!", "success")
+        flash("Deine Nachricht wurde aktualisiert!", "success")
         return redirect(url_for("post", post_id=post.id))
     elif request.method == "GET":
         form.title.data = post.title
@@ -903,7 +1157,7 @@ def delete_post(post_id):
         abort(403)
     db.session.delete(post)
     db.session.commit()
-    flash("Your post has been deleted!", "success")
+    flash("Deine Nachricht wurde gelöscht!", "success")
     return redirect(url_for("home"))
 
 

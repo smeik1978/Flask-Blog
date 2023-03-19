@@ -1,0 +1,56 @@
+{% extends "verwaltung.html" %}
+{% block verwaltung %}
+<div>
+    <h1>Erfassung 2023</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr class="">
+                <th scope="col">Wohnung</th>
+                <th scope="col">WEID</th>
+                <th scope="col">Vorname</th>
+                <th scope="col">Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <select class="form-select" aria-label="Wohnung">
+                        <option value="1">0.1</option>
+                        <option value="2">0.2</option>
+                        <option value="3">0.3</option>
+                </td>
+                <td>
+                    <select class="form-select" aria-label="WEID">
+                        <option value="1">00101</option>
+                        <option value="2">00201</option>
+                        <option value="3">00301</option>
+                </td>
+                <td>Matthias</td>
+                <td>Müller</td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Raum</th>
+                <th>Zählertyp</th>
+                <th>Zählernummer</th>
+                <th>Wert Vorjahr</th>
+                <th>Ablesewert</th>
+                <th>Check</th>
+            </tr>
+        </thead>
+        <tr>
+            <td>Wohnzimmer</td>
+            <td>Heizung</td>
+            <td>1234567890</td>
+            <td>9876</td>
+            <td><input type="text"></td>
+            <td>leer, grüner Haken wenn ok, rotes x wenn false</td>
+        </tr>
+    </table>
+</div>
+{% endblock verwaltung %}
+{% block Menue %}
+{% endblock Menue %}

@@ -58,9 +58,16 @@
                                 <a class="nav-link disabled">Disabled</a>
                             </li>
                         </ul>
+                        <div class="nav-item pe-2">
                         <a class="nav-link active"
                             aria-current="page"
-                            href="#">Login</a>
+                            href="{{ url_for('login') }}">Anmelden</a>
+                        </div>
+                        <div class="nav-item pe-2">
+                        <a class="nav-link active"
+                            aria-current="page"
+                            href="{{ url_for('logout') }}">Abmelden</a>
+                        </div>
                     </div>
                 </div>
             </nav>

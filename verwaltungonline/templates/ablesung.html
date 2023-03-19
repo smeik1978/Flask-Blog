@@ -1,56 +1,66 @@
 {% extends "verwaltung.html" %}
+{% block script_head %}
+<script src="{{ url_for('static', filename='load_data_from_db.js') }}"></script>
+{% endblock %}
 {% block verwaltung %}
-<div>
-    <h1>Erfassung 2023</h1>
-    <table class="table table-striped">
-        <thead>
-            <tr class="">
-                <th scope="col">Wohnung</th>
-                <th scope="col">WEID</th>
-                <th scope="col">Vorname</th>
-                <th scope="col">Name</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>
-                    <select class="form-select" aria-label="Wohnung">
-                        <option value="1">0.1</option>
-                        <option value="2">0.2</option>
-                        <option value="3">0.3</option>
-                </td>
-                <td>
-                    <select class="form-select" aria-label="WEID">
-                        <option value="1">00101</option>
-                        <option value="2">00201</option>
-                        <option value="3">00301</option>
-                </td>
-                <td>Matthias</td>
-                <td>Müller</td>
-            </tr>
-        </tbody>
-    </table>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Raum</th>
-                <th>Zählertyp</th>
-                <th>Zählernummer</th>
-                <th>Wert Vorjahr</th>
-                <th>Ablesewert</th>
-                <th>Check</th>
-            </tr>
-        </thead>
-        <tr>
-            <td>Wohnzimmer</td>
-            <td>Heizung</td>
-            <td>1234567890</td>
-            <td>9876</td>
-            <td><input type="text"></td>
-            <td>leer, grüner Haken wenn ok, rotes x wenn false</td>
-        </tr>
-    </table>
+<div class="content-section mt-3">
+    <div class="row">
+        <div class="col">
+            <legend class="border-bottom mb-4">{{ legend }}</legend>
+            <form action="{{ action }}" method="POST">
+                {{ form.hidden_tag() }}
+                <fieldset class="form-group">
+                    <div class="form-group">
+                        {{ form.weid.label(class="form-label") }}
+                        {{ form.weid(class="form-control", onchange="updateDataFromDB(event)") }}
+                        {{ form.wohnung.label(class="form-control-label") }}
+                        {{ form.wohnung(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.vorname.label(class="form-control-label") }}
+                        {{ form.vorname(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.nachname.label(class="form-control-label") }}
+                        {{ form.nachname(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.zaehler.label(class="form-control-label") }}
+                        {{ form.zaehler(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.raum.label(class="form-control-label") }}
+                        {{ form.raum(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.zaehlertyp.label(class="form-control-label") }}
+                        {{ form.zaehlertyp(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.wert_vorjahr.label(class="form-control-label") }}
+                        {{ form.wert_vorjahr(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.ablesewert.label(class="form-control-label") }}
+                        {{ form.ablesewert(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.check.label(class="form-control-label") }}
+                        {{ form.check(class="form-control") }}
+                    </div>
+                </fieldset>
+                <div class="form-group mt-3">
+                    {{ form.submit(class="btn btn-outline-primary") }}
+                    <a href="{{ url_for('verwaltung') }}" class="btn
+                        btn-outline-primary" role="button">Abbrechen</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
 {% endblock verwaltung %}
-{% block Menue %}
-{% endblock Menue %}
+
+{% block script_%}
+<!-- <script src="{{ url_for('static', filename='load_data_from_db.js') }}"></script> -->
+{% endblock %}
