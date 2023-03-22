@@ -57,12 +57,12 @@ function updateDataFromDB(event) {
     console.log('data: ', data);
     console.log('window is: ', window.location.href);
     if (window.location.href == window.location.origin + '/ablesung') {
-      const zaehlerElement = document.getElementById('zaehler');
-      //console.log('zaehlerElement: ', zaehlerElement);
-      //console.log('zaehlerElement: ', zaehlerElement.parentNode.tagName);
-      if (zaehlerElement.parentNode.tagName.toLowerCase() === 'tr') {
+      const tablebodyElement = document.getElementById('tbody');
+      //console.log('tbodyElement: ', tablebodyElement);
+      //console.log('tbodyElement: ', tablebodyElement.childNodes);
+      if (tablebodyElement) { //(tablebodyElement.childNode.tagName.toLowerCase() === 'tr') {
         // Vorhandene Zeilen entfernen
-        const tbodyElement = zaehlerElement.parentNode.parentNode;
+        const tbodyElement = tablebodyElement //.parentNode.parentNode;
         while (tbodyElement.firstChild) {
           tbodyElement.removeChild(tbodyElement.firstChild);
         }
