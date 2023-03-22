@@ -55,19 +55,17 @@ function updateDataFromDB(event) {
   .then(response => response.json())
   .then(data => {
     console.log('data: ', data);
-    console.log('window is: ', window.location.href);
+    //console.log('window is: ', window.location.href);
     if (window.location.href == window.location.origin + '/ablesung') {
       const tablebodyElement = document.getElementById('tbody');
-      //console.log('tbodyElement: ', tablebodyElement);
-      //console.log('tbodyElement: ', tablebodyElement.childNodes);
-      if (tablebodyElement) { //(tablebodyElement.childNode.tagName.toLowerCase() === 'tr') {
+      if (tablebodyElement) { 
         // Vorhandene Zeilen entfernen
         const tbodyElement = tablebodyElement //.parentNode.parentNode;
         while (tbodyElement.firstChild) {
           tbodyElement.removeChild(tbodyElement.firstChild);
         }
         // Neue Zeilen erstellen und hinzufügen
-        for (const key in data) {
+        data.zaehler.forEach(zaehler => {  //for (const key in data) {
           const trElement = document.createElement('tr');
           const tdRaum = document.createElement('td');
           const tdZaehler = document.createElement('td');
@@ -77,15 +75,15 @@ function updateDataFromDB(event) {
           const tdCheck = document.createElement('td');
           const inputAblesewert = document.createElement('input');
 
-          tdRaum.textContent = 'Raumname'; // ToDo
-          tdZaehler.textContent = data[key];
-          tdTyp.textContent = 'Zählertyp'; // ToDo
-          tdVorjahreswert.textContent = 'Vorjahreswert'; // ToDo
+          tdRaum.textContent = zaehler.raum;
+          tdZaehler.textContent = zaehler.nummer;
+          tdTyp.textContent = zaehler.typ; // ToDo: Klarname statt Objekt
+          tdVorjahreswert.textContent = 'Vorjahreswert'; // ToDo Abfrage in Route definieren und Ergebnis in JSON integrieren
           inputAblesewert.type = 'text';
           inputAblesewert.classList.add('form-control', 'form-control-xs');
           inputAblesewert.name = `ablesewert_${data[key]}`;
           tdAblesewert.appendChild(inputAblesewert);
-          tdCheck.textContent = 'Check'; // ToDo
+          tdCheck.textContent = 'Check'; // ToDo Validierung der Zeile; z.B not None and Ableswert > Vorjahreswer
 
           trElement.appendChild(tdRaum);
           trElement.appendChild(tdZaehler);
@@ -95,7 +93,7 @@ function updateDataFromDB(event) {
           trElement.appendChild(tdCheck);
 
           tbodyElement.appendChild(trElement);
-        }
+        })
       }
     }
     for (key in data) {

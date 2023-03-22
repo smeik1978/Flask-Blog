@@ -106,28 +106,20 @@ def ablesung():
                     row_dict = row.__dict__
                     print(f"row_dict: {row_dict}")
                     wohnung_zaehler = Zaehler.query.filter_by(wohnung_id=row_dict["wohnung_id"]).all()
-                    print(f"wohnung_zaehler: {wohnung_zaehler}")
-                    wohnung_zaehler_nummer = {}
-                    i=1
-                    for item in wohnung_zaehler:
-                        wohnung_zaehler_nummer[i]=item.nummer
-                        i +=1
-                    print(f"wohnung_zaehler_nummer: {wohnung_zaehler_nummer}")
-                    del row_dict['_sa_instance_state']
-                    row_dict['Mietbeginn'] = row_dict['mietbeginn'].strftime('%Y-%m-%d')
-                    row_dict[data['name']] = data['id']
-                    keys_to_rename = []     # da die relevanten Datenbank-Spalten ein _id Suffix im Namen haben, müssen wir diese umbenennen
-                    for key in row_dict.keys():
-                        if key.endswith('_id'):
-                            keys_to_rename.append(key)
-                    for key in keys_to_rename:
-                        new_key = key[:-3]
-                        row_dict[new_key] = row_dict.pop(key)
-                    for key in row_dict.keys():
-                        pass
-                        #print(f"Key: {key}")
-                    #json_data = json.dumps(row_dict, default=str)
-                    json_data = json.dumps(wohnung_zaehler_nummer, default=str)
+                    #print(f"wohnung_zaehler: {wohnung_zaehler}")
+                    wohnung = {}
+                    zaehler_list = []
+                    for i, item in enumerate(wohnung_zaehler):
+                        zaehler_dict = {}
+                        zaehler_dict['id'] = i+1
+                        zaehler_dict['nummer'] = item.nummer
+                        zaehler_dict['typ'] = item.typ.bezeichnung
+                        zaehler_dict['raum'] = item.ort
+                        zaehler_list.append(zaehler_dict)
+                    wohnung['id']=1
+                    wohnung['zaehler'] = zaehler_list
+                    #print(f"wohnung: {wohnung}")
+                    json_data = json.dumps(wohnung, default=str)
                     print(f"JSON to send: {json_data}")
                     return json_data
     return render_template(
